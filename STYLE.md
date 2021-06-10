@@ -20,7 +20,7 @@ e_String = "hello, world!"
 Function names should be written using snake case.
 ```py
 # Correct: function name uses snake case and arguments are written in camelCase.
-def snakey_name_ssss(argOne: int, : argTwo, argThree: float) -> None:
+def snakey_name_ssss(argOne: int, argTwo: str, argThree: float) -> None:
     pass
 
 # Incorrect: function and argument names are inconsistent.
