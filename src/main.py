@@ -3,8 +3,9 @@ import pygame
 if __name__ == "__main__":
     pygame.init()
 
-    display = pygame.display.set_mode([640, 480])
-    
+    resolution = (640, 480)
+    display = pygame.display.set_mode(resolution)
+
     isRunning = True
     while isRunning:
         for event in pygame.event.get():
