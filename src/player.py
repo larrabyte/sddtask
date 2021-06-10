@@ -1,8 +1,8 @@
-from entity import *
+import entity
 
-class Player(Entity):
+class Player(entity.Entity):
     def __init__(self):
-        self.position = [0, 0]
+        self.position = (0, 0)
 
-    def Tick(self):
+    def tick(self):
         pass

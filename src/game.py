@@ -1,16 +1,16 @@
-import entity
 import pygame
+import entity
 
-class Game():
+class Game:
     def __init__(self) -> None:
-        self.entities = [entity.Entity];
+        self.entities = [entity.Entity]
 
-    def Tick(self) -> None:
+    def tick(self) -> None:
         for entity in self.entities:
             entity.Tick()
 
-    def Render(self, surface : pygame.Surface) -> None:
+    def render(self, surface: pygame.Surface) -> None:
         pass
 
-    def AddEntity(self, entity : entity.Entity) -> None:
+    def add_entity(self, entity: entity.Entity) -> None:
         self.entities.append(entity)

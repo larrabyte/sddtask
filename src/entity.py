@@ -1,6 +1,6 @@
 class Entity:
-    def __init__() -> None:
+    def __init__(self) -> None:
         pass
 
-    def Tick() -> None:
+    def tick(self) -> None:
         pass
