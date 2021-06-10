@@ -1,9 +1,11 @@
 import pygame
+from game import *
 
 if __name__ == "__main__":
     pygame.init()
 
     display = pygame.display.set_mode([640, 480])
+    gameInstance = Game()
     
     isRunning = True
     while isRunning:
@@ -12,5 +14,7 @@ if __name__ == "__main__":
                 isRunning = False
 
         display.fill([0, 0, 0])
+
+        gameInstance.Tick()
 
         pygame.display.flip()
