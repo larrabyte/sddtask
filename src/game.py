@@ -3,6 +3,7 @@ import pygame.event
 import pygame.time
 import pygame.key
 import pygame
+
 import entity
 
 class Game:

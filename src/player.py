@@ -11,7 +11,7 @@ class Player(entity.Entity):
         self.y = 0.0
         self.speed = 50.0
 
-        surface = resources.get_image("max")
+        surface = resources.Manager.get_image("max")
         self.sprite = pygame.transform.scale(surface, (128, 128))
 
     def tick(self, a, deltaTime: float) -> None:
