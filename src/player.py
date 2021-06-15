@@ -14,7 +14,7 @@ class Player(entity.Entity):
         surface = resources.Manager.get_image("max")
         self.sprite = pygame.transform.scale(surface, (128, 128))
 
-    def tick(self, a, deltaTime: float) -> None:
+    def tick(self, deltaTime: float) -> None:
         """Updates the player's internal state."""
         if inputs.Keyboard.pressed(pygame.locals.K_w):
             self.y -= self.speed * deltaTime

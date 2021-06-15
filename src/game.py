@@ -27,7 +27,7 @@ class Game:
 
         # Tick all tracked entities.
         for entity in self.entities:
-            entity.tick(self, deltaTime)
+            entity.tick(deltaTime)
 
     def render(self, surface: pygame.Surface) -> None:
         """Draws all entities onto the specified surface."""
