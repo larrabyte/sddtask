@@ -8,13 +8,16 @@ class Game:
             "player": player.Player()
         }
 
-    def tick(self, elaspedTime: float) -> None:
+    def tick(self, deltaTime: float) -> None:
+        """Update each entity's internal state."""
         for entity in self.entities.values():
-            entity.tick(elaspedTime)
+            entity.tick(deltaTime)
 
     def render(self, surface: pygame.Surface) -> None:
+        """Draws all entities onto the specified surface."""
         for entity in self.entities.values():
             entity.render(surface)
 
     def add_entity(self, entity: entity.Entity) -> None:
+        """Adds an entity to the game's internal tracking system."""
         self.entities.append(entity)

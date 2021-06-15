@@ -8,7 +8,6 @@ if __name__ == "__main__":
 
     resolution = (640, 480)
     backgroundColour = (0, 0, 0)
-
     display = pygame.display.set_mode(resolution)
     gameInstance = game.Game()
 
@@ -16,7 +15,7 @@ if __name__ == "__main__":
     running = True
     while running:
         newTime = pygame.time.get_ticks()
-        elaspedTime: float = (newTime - lastTime) / 1000.0
+        deltaTime = (newTime - lastTime) / 1000.0
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -24,7 +23,7 @@ if __name__ == "__main__":
 
         display.fill(backgroundColour)
 
-        gameInstance.tick(elaspedTime)
+        gameInstance.tick(deltaTime)
         gameInstance.render(display)
 
         pygame.display.flip()
