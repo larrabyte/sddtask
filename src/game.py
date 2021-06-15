@@ -1,13 +1,16 @@
 import pygame
 import entity
+import player
 
 class Game:
     def __init__(self) -> None:
-        self.entities = [entity.Entity]
+        self.entities = {
+            "player": player.Player()
+        }
 
     def tick(self) -> None:
-        for entity in self.entities:
-            entity.Tick()
+        for entity in self.entities.values():
+            entity.tick()
 
     def render(self, surface: pygame.Surface) -> None:
         pass
