@@ -3,7 +3,7 @@ import pygame
 
 import os
 
-class Manager:
+class ResourceManager:
     images = {}
 
     @classmethod

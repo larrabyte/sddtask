@@ -1,8 +1,7 @@
-import player
-import game
+from player import Player
+from game import Game
 
 if __name__ == "__main__":
-    instance = game.Game()
-    player = player.Player()
-    instance.add_entity(player)
-    instance.run()
+    p = Player()
+    Game.add_entity(p)
+    Game.run()
