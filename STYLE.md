@@ -52,13 +52,17 @@ class entitySystem:
 
 ## Imports
 Import statements should be used for packages and modules only, not for individual classes or functions. Aliasing modules is strongly encouraged if potential naming conflicts are present. Seperate import statements should reside on seperate lines.
+
+An **exception** to this rule is importing game classes. Writing `game.Game` is super annoying when all you have to do to avoid that is write `from game import Game`.
 ```py
-# Correct: each import is separated and included as a *whole* module.
+# Correct: import is separated and included as a *whole* module.
+# Game classes are allowed to be imported individually.
+from game import Game
 import typing as t
 import pygame
 import os
 
-# Incorrect: specific sub-modules are imported into the global namespace.
+# Incorrect: sub-modules are imported into the global namespace.
 from pygame import display
 from json import loads
 import os
