@@ -1,5 +1,7 @@
+from physics import PhysicsBody
 from entity import Entity
 
+import typing as t
 import pygame.display
 import pygame.event
 import pygame.time
@@ -10,17 +12,21 @@ class Game:
     display: pygame.Surface
     clock: pygame.time.Clock
 
-    entities = []
-    running = True
+    bodies: t.List[PhysicsBody] = []
+    entities: t.List[Entity] = []
+    running: bool = True
 
     @classmethod
     def add_entity(cls, ent: Entity) -> None:
         """Add an entity to the game's internal tracking system."""
         cls.entities.append(ent)
 
+        if hasattr(ent, "body"):
+            cls.bodies.append(ent.body)
+
     @classmethod
     def tick(cls, deltaTime: float) -> None:
-        """Update the game's internal state and ticks all tracked entities."""
+        """Update the game's physics state and ticks all tracked entities."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 cls.running = False
@@ -28,6 +34,14 @@ class Game:
         # Tick all tracked entities.
         for entity in cls.entities:
             entity.tick(deltaTime)
+
+        # Perform physics calculations.
+        for body in cls.bodies:
+            if body.gravity:
+                body.accel.y += 9.8 * deltaTime
+
+            body.vel += body.accel * deltaTime
+            body.pos += body.vel * deltaTime
 
     @classmethod
     def render(cls, surface: pygame.Surface) -> None:
