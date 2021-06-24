@@ -8,13 +8,17 @@ import pygame.time
 import pygame.key
 import pygame
 
+UNITS_PER_METRE = 32
+
 class Game:
     display: pygame.Surface
     clock: pygame.time.Clock
 
     bodies: t.List[PhysicsBody] = []
     entities: t.List[Entity] = []
-    running: bool = True
+    running = True
+
+    displayScale = 1
 
     @classmethod
     def add_entity(cls, ent: Entity) -> None:
@@ -38,10 +42,12 @@ class Game:
         # Perform physics calculations.
         for body in cls.bodies:
             if body.gravity:
-                body.accel.y += 9.8 * deltaTime
+                body.accel.y = -9.8
 
             body.vel += body.accel * deltaTime
-            body.pos += body.vel * deltaTime
+            
+            body.pos.y += -(body.vel.y * deltaTime) * UNITS_PER_METRE
+            body.pos.x += (body.vel.x * deltaTime) * UNITS_PER_METRE
 
     @classmethod
     def render(cls, surface: pygame.Surface) -> None:
