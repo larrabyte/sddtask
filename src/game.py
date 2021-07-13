@@ -74,3 +74,6 @@ class Game:
             cls.tick(deltaTime)
             cls.render(cls.display)
             cls.clock.tick(60)
+import pygame
+import random
+from entity import Entity
