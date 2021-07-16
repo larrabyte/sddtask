@@ -1,7 +1,7 @@
 from entity import Entity
-from physics import PhysicsBody
 from resources import ResourceManager
 
+import typing as t
 import pymunk
 
 import pygame.display
