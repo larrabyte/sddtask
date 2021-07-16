@@ -1,7 +1,7 @@
-from physics import PhysicsBody
 from entity import Entity
 
-import typing as t
+import pymunk
+
 import pygame.display
 import pygame.event
 import pygame.time
@@ -14,18 +14,19 @@ class Game:
     display: pygame.Surface
     clock: pygame.time.Clock
 
-    bodies: t.List[PhysicsBody] = []
-    entities: t.List[Entity] = []
-    running = True
-
+    phySpace = pymunk.Space()
     displayScale = 1
+    running = True
+    entities = []
+    bodies = []
 
     @classmethod
     def add_entity(cls, ent: Entity) -> None:
         """Add an entity to the game's internal tracking system."""
         cls.entities.append(ent)
 
-        if hasattr(ent, "body"):
+        if hasattr(ent, "body") and hasattr(ent, "shapes"):
+            cls.phySpace.add(ent.body, *ent.shapes)
             cls.bodies.append(ent.body)
 
     @classmethod
@@ -39,15 +40,8 @@ class Game:
         for entity in cls.entities:
             entity.tick(deltaTime)
 
-        # Perform physics calculations.
-        for body in cls.bodies:
-            if body.gravity:
-                body.accel.y = -9.8
-
-            body.vel += body.accel * deltaTime
-            
-            body.pos.y += -(body.vel.y * deltaTime) * UNITS_PER_METRE
-            body.pos.x += (body.vel.x * deltaTime) * UNITS_PER_METRE
+        # Update the Pymunk physics space.
+        cls.phySpace.step(deltaTime)
 
     @classmethod
     def render(cls, surface: pygame.Surface) -> None:
@@ -67,6 +61,9 @@ class Game:
         resolution, flags = (640, 480), pygame.SCALED | pygame.SHOWN
         cls.display = pygame.display.set_mode(size=resolution, flags=flags)
         cls.clock = pygame.time.Clock()
+
+        # Initialise Pymunk and setup a suitable physics space.
+        cls.phySpace.gravity = 0, 9.8
 
         # Handle event dispatch here.
         while cls.running:
