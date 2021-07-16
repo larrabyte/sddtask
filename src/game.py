@@ -1,4 +1,6 @@
 from entity import Entity
+from physics import PhysicsBody
+from resources import ResourceManager
 
 import pymunk
 
@@ -8,7 +10,8 @@ import pygame.time
 import pygame.key
 import pygame
 
-UNITS_PER_METRE = 32
+TILE_SIZE = 32
+UNITS_PER_METRE = TILE_SIZE
 
 class Game:
     display: pygame.Surface
@@ -19,6 +22,13 @@ class Game:
     running = True
     entities = []
     bodies = []
+
+    viewport = pygame.Vector2(0, 0)
+    viewportSize: t.Tuple[int, int]
+    viewportSizeTiles: t.Tuple[int, int] # Viewport size in tiles
+
+    from level import Level
+    currentLevel: Level = ResourceManager.get_level("level1")
 
     @classmethod
     def add_entity(cls, ent: Entity) -> None:
@@ -46,8 +56,7 @@ class Game:
     @classmethod
     def render(cls, surface: pygame.Surface) -> None:
         """Draws all entities onto the specified surface."""
-        background = (0, 0, 0)
-        cls.display.fill(background)
+        cls.currentLevel.render(surface)
 
         for entity in cls.entities:
             entity.render(surface)
@@ -58,8 +67,11 @@ class Game:
     def run(cls) -> None:
         """Initialises and starts the game."""
         pygame.init() # Initialise all PyGame subsystems before creating objects.
-        resolution, flags = (640, 480), pygame.SCALED | pygame.SHOWN
-        cls.display = pygame.display.set_mode(size=resolution, flags=flags)
+        cls.viewportSize = (1024, 768)
+        cls.viewportSizeTiles = ((cls.viewportSize[0] + TILE_SIZE - 1) / TILE_SIZE, (cls.viewportSize[1] / TILE_SIZE + TILE_SIZE - 1)) # Ensure that we round up
+
+        flags = pygame.SCALED | pygame.SHOWN
+        cls.display = pygame.display.set_mode(size=cls.viewportSize, flags=flags)
         cls.clock = pygame.time.Clock()
 
         # Initialise Pymunk and setup a suitable physics space.
