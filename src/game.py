@@ -1,3 +1,4 @@
+from constants import *
 from entity import Entity
 from resources import ResourceManager
 
@@ -9,9 +10,6 @@ import pygame.event
 import pygame.time
 import pygame.key
 import pygame
-
-TILE_SIZE = 32
-UNITS_PER_METRE = TILE_SIZE
 
 class Game:
     display: pygame.Surface
@@ -68,14 +66,14 @@ class Game:
         """Initialises and starts the game."""
         pygame.init() # Initialise all PyGame subsystems before creating objects.
         cls.viewportSize = (1024, 768)
-        cls.viewportSizeTiles = ((cls.viewportSize[0] + TILE_SIZE - 1) / TILE_SIZE, (cls.viewportSize[1] / TILE_SIZE + TILE_SIZE - 1)) # Ensure that we round up
+        cls.viewportSizeTiles = (int((cls.viewportSize[0] + TILE_SIZE - 1) / TILE_SIZE), int((cls.viewportSize[1] / TILE_SIZE + TILE_SIZE - 1))) # Ensure that we round up
 
         flags = pygame.SCALED | pygame.SHOWN
         cls.display = pygame.display.set_mode(size=cls.viewportSize, flags=flags)
         cls.clock = pygame.time.Clock()
 
         # Initialise Pymunk and setup a suitable physics space.
-        cls.phySpace.gravity = 0, 9.8
+        cls.phySpace.gravity = 0, -9.8 * UNITS_PER_METRE
 
         # Handle event dispatch here.
         while cls.running:
