@@ -4,6 +4,7 @@ from resources import ResourceManager
 
 import typing as t
 import pymunk
+import pymunk.pygame_util
 
 import pygame.display
 import pygame.event
@@ -59,6 +60,7 @@ class Game:
         for entity in cls.entities:
             entity.render(surface)
 
+        cls.phySpace.debug_draw(cls.options)
         pygame.display.flip()
 
     @classmethod
@@ -84,12 +86,13 @@ class Game:
                     phyShape = pymunk.Poly.create_box(phyBody, size=(TILE_SIZE, TILE_SIZE))
                     Game.phySpace.add(phyBody, phyShape)
 
+        cls.options = pymunk.pygame_util.DrawOptions(cls.display)
+        cls.options.flags = pymunk.SpaceDebugDrawOptions.DRAW_SHAPES | pymunk.SpaceDebugDrawOptions.DRAW_COLLISION_POINTS
+        pymunk.pygame_util.positive_y_is_up = True
+
         # Handle event dispatch here.
         while cls.running:
             deltaTime = cls.clock.get_time() / 1000
             cls.tick(deltaTime)
             cls.render(cls.display)
             cls.clock.tick(60)
-import pygame
-import random
-from entity import Entity
