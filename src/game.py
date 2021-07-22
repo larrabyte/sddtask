@@ -60,14 +60,14 @@ class Game:
         for entity in cls.entities:
             entity.render(surface)
 
-        #cls.phySpace.debug_draw(cls.options)
+        cls.phySpace.debug_draw(cls.options)
         pygame.display.flip()
 
     @classmethod
     def run(cls) -> None:
         """Initialises and starts the game."""
         pygame.init() # Initialise all PyGame subsystems before creating objects.
-        cls.viewportSize = (1024, 768)
+        cls.viewportSize = (1600, 900)
         cls.viewportSizeTiles = (int((cls.viewportSize[0] + TILE_SIZE - 1) / TILE_SIZE), int((cls.viewportSize[1] / TILE_SIZE + TILE_SIZE - 1))) # Ensure that we round up
 
         flags = pygame.SCALED | pygame.SHOWN
@@ -82,8 +82,10 @@ class Game:
                 if tile > 0:
                     x, y = j * TILE_SIZE, (cls.currentLevel.height - i - 1) * TILE_SIZE
                     phyBody = pymunk.Body(mass=1.0, moment=1.0, body_type=pymunk.Body.STATIC)
-                    phyBody.position = (x + TILE_SIZE / 2, y + TILE_SIZE / 2)
-                    phyShape = pymunk.Poly.create_box(phyBody, size=(TILE_SIZE, TILE_SIZE))
+                    phyBody.position = (x + TILE_SIZE / 2 - 1, y + TILE_SIZE / 2 - 1)
+                    phyShape = pymunk.Poly.create_box(phyBody, size=(TILE_SIZE + 2, TILE_SIZE + 2))
+                    phyShape.friction = 0.9;
+                    phyShape.elasticity = 0
                     Game.phySpace.add(phyBody, phyShape)
 
         cls.options = pymunk.pygame_util.DrawOptions(cls.display)

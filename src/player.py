@@ -12,6 +12,8 @@ import pygame
 
 
 class Player(Entity):
+    wasJumping = False
+
     def __init__(self):
         surface = ResourceManager.get_image("max")
         self.sprite = pygame.transform.scale(surface, (TILE_SIZE, TILE_SIZE * 2))
@@ -21,6 +23,9 @@ class Player(Entity):
         self.body.position = (TILE_SIZE, TILE_SIZE * 10)
 
         box = pymunk.Poly.create_box_bb(self.body, pymunk.BB(0, 0, TILE_SIZE, TILE_SIZE * 2))
+        box.friction = 0.9;
+        box.elasticity = 0
+        
         self.shapes = [box]
 
     def tick(self, deltaTime: float) -> None:
@@ -28,15 +33,18 @@ class Player(Entity):
         horizontalVelocity = 0
 
         if Keyboard.pressed(pygame.locals.K_a):
-            horizontalVelocity = -PLAYER_MOVEMENT_SPEED
+            self.body.apply_force_at_local_point([-PLAYER_MOVEMENT_FORCE, 0])
         if Keyboard.pressed(pygame.locals.K_d):
-            horizontalVelocity = PLAYER_MOVEMENT_SPEED
+            self.body.apply_force_at_local_point([PLAYER_MOVEMENT_FORCE, 0])
 
-        if Keyboard.pressed(pygame.locals.K_SPACE)\
-            and Game.currentLevel.collisionCheck(self.body.position.x, self.body.position.x + TILE_SIZE, self.body.position.y + TILE_SIZE * 2, self.body.position.y)[3]:
-            self.body.apply_impulse_at_local_point([0, PLAYER_JUMP_FORCE])
+        if Keyboard.pressed(pygame.locals.K_SPACE):
+            if not self.wasJumping and\
+                Game.currentLevel.collisionCheck(self.body.position.x, self.body.position.x + TILE_SIZE, self.body.position.y + TILE_SIZE * 2, self.body.position.y)[3]:
+                self.body.apply_impulse_at_local_point([0, PLAYER_JUMP_FORCE])
+            wasJumping = True
+        else:
+            wasJumping = False
 
-        self.body.velocity = pymunk.Vec2d(horizontalVelocity, self.body.velocity.y)
         self.body.angle = 0
         self.body.space.reindex_shapes_for_body(self.body)
 
