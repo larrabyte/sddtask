@@ -34,19 +34,6 @@ class Player(Entity):
 
         self.body.velocity = pymunk.Vec2d(horizontalVelocity, self.body.velocity.y)
 
-        collison = Game.currentLevel.collisionCheck(
-            self.body.position.x, self.body.position.x + TILE_SIZE, self.body.position.y + TILE_SIZE * 2, self.body.position.y)
-
-        if collison[3]: # Bottom
-            self.body.apply_impulse_at_local_point((0, -PLAYER_MASS * self.body.velocity.y))
-            if Keyboard.pressed(pygame.locals.K_SPACE): # Allow jumping is player is grounded
-                self.body.apply_impulse_at_local_point((0, PLAYER_JUMP_FORCE))
-
-        if collison[1]: # Left
-            self.body.position = pymunk.Vec2d(int(self.body.position.x + TILE_SIZE - 1) & ~(TILE_SIZE - 1), self.body.position.y) # Move the player to the next tile so it does not collide
-        if collison[2]: # Right
-            self.body.position = pymunk.Vec2d(int(self.body.position.x - TILE_SIZE) & ~(TILE_SIZE - 1), self.body.position.y) # Move the player to the next tile so it does not collide
-
         Game.viewport.x = max(0,
             self.body.position.x - Game.viewportSize[0] / 2) # Postion player in centre of screen
 

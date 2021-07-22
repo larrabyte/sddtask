@@ -75,6 +75,15 @@ class Game:
         # Initialise Pymunk and setup a suitable physics space.
         cls.phySpace.gravity = 0, -9.8 * UNITS_PER_METRE
 
+        for i, row in enumerate(cls.currentLevel.foregroundLayer):
+            for j, tile in enumerate(row):
+                if tile > 0:
+                    x, y = j * TILE_SIZE, (cls.currentLevel.height - i - 1) * TILE_SIZE
+                    phyBody = pymunk.Body(mass=1.0, moment=1.0, body_type=pymunk.Body.STATIC)
+                    phyBody.position = (x, y)
+                    phyShape = pymunk.Poly.create_box(phyBody, size=(TILE_SIZE, TILE_SIZE))
+                    Game.phySpace.add(phyBody, phyShape)
+
         # Handle event dispatch here.
         while cls.running:
             deltaTime = cls.clock.get_time() / 1000
