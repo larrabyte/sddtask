@@ -53,8 +53,8 @@ class Level:
     def collisionCheck(self, x1: int, x2: int, y1: int, y2: int) -> typing.Tuple[bool, bool, bool, bool]:
         left: int = self.getTileAt(x1, y1) + self.getTileAt(x1, y2) + self.getTileAt(x1, (y1 + y2) / 2)
         right: int = self.getTileAt(x2, y1) + self.getTileAt(x2, y2) + self.getTileAt(x2, (y1 + y2) / 2)
-        top: int = self.getTileAt(x1, y1) + self.getTileAt(x2, y1)
-        bottom: int = self.getTileAt(x1, y2) + self.getTileAt(x2, y2)
+        top: int = self.getTileAt((x1 + x2) / 2, y1)
+        bottom: int = self.getTileAt((x1 + x2) / 2, y2)
 
         print(f"l {left} r {right} t {top} b {bottom}")
 

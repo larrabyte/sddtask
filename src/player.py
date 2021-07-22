@@ -32,6 +32,10 @@ class Player(Entity):
         if Keyboard.pressed(pygame.locals.K_d):
             horizontalVelocity = PLAYER_MOVEMENT_SPEED
 
+        if Keyboard.pressed(pygame.locals.K_SPACE)\
+            and Game.currentLevel.collisionCheck(self.body.position.x, self.body.position.x + TILE_SIZE, self.body.position.y + TILE_SIZE * 2, self.body.position.y)[3]:
+            self.body.apply_impulse_at_local_point([0, PLAYER_JUMP_FORCE])
+
         self.body.velocity = pymunk.Vec2d(horizontalVelocity, self.body.velocity.y)
         self.body.angle = 0
         self.body.space.reindex_shapes_for_body(self.body)

@@ -60,7 +60,7 @@ class Game:
         for entity in cls.entities:
             entity.render(surface)
 
-        cls.phySpace.debug_draw(cls.options)
+        #cls.phySpace.debug_draw(cls.options)
         pygame.display.flip()
 
     @classmethod
@@ -82,7 +82,7 @@ class Game:
                 if tile > 0:
                     x, y = j * TILE_SIZE, (cls.currentLevel.height - i - 1) * TILE_SIZE
                     phyBody = pymunk.Body(mass=1.0, moment=1.0, body_type=pymunk.Body.STATIC)
-                    phyBody.position = (x, y)
+                    phyBody.position = (x + TILE_SIZE / 2, y + TILE_SIZE / 2)
                     phyShape = pymunk.Poly.create_box(phyBody, size=(TILE_SIZE, TILE_SIZE))
                     Game.phySpace.add(phyBody, phyShape)
 
