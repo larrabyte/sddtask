@@ -39,6 +39,9 @@ class Game:
 
     @classmethod
     def tick(cls, deltaTime: float) -> None:
+        # Update the Pymunk physics space.
+        cls.phySpace.step(deltaTime)
+
         """Update the game's physics state and ticks all tracked entities."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -47,9 +50,6 @@ class Game:
         # Tick all tracked entities.
         for entity in cls.entities:
             entity.tick(deltaTime)
-
-        # Update the Pymunk physics space.
-        cls.phySpace.step(deltaTime)
 
     @classmethod
     def render(cls, surface: pygame.Surface) -> None:
