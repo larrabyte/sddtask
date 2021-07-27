@@ -1,18 +1,26 @@
-import pygame.image
-import pygame
-
+import level
 import json
 import os
 
-class ResourceManager:
-    images = {}
-    levels = {}
+import pygame.image
+import pygame
 
-    @classmethod
-    def get_image(cls, name: str) -> pygame.Surface:
-        """Returns a surface from the internal store."""
-        resource = cls.images.get(name, None)
-        if resource is not None:
+class Resources:
+    def __init__(self) -> None:
+        """Initialises an instance of the Resource Manager."""
+        self.levels = {}
+        self.data = {}
+
+    def fetch_level_data(self, name: str) -> dict:
+        """Returns the JSON data for a level, specified by `name` (read from disk)."""
+        filepath = os.path.join("levels", f"{name}.json")
+
+        with open(filepath, "r") as file:
+            return json.load(file)
+
+    def get_image(self, name: str) -> pygame.Surface:
+        """Returns a surface, identified by `name`. Caches if required."""
+        if (resource := self.data.get(name, None)) is not None:
             return resource
 
         try: # PyGame on Apple Silicon doesn't support non-BMP images.
@@ -22,26 +30,10 @@ class ResourceManager:
             fallback = os.path.join("images", f"{name}.bmp")
             surface = pygame.image.load(fallback)
 
-        cls.images[name] = surface
+        self.data[name] = surface
         return surface
 
-    # Returns JSON data for a level
-    @classmethod
-    def get_leveldata(cls, name: str) -> dict:
-        file = open(os.path.join("levels", f"{name}.json"))
-        return json.load(file)
-
-
-    from level import Level
-    # Returns game Level object
-    @classmethod
-    def get_level(cls, name: str) -> Level:
-        from level import Level
-        level = cls.levels.get(name, None)
-        if level is not None:
+    def getLevel(self, name: str) -> "level.Level":
+        """Creates and/or returns a `Level` object."""
+        if (level := self.levels.get(name, None)) is not None:
             return level
-
-        level = Level(name)
-        cls.levels[name] = level
-
-        return level
