@@ -1,81 +1,113 @@
-import typing
-import pygame
-import json
+import typing as t
+import constants
+import game
 
-from game import TILE_SIZE
+import pygame.math
+import pygame.draw
+import pygame
 
 class Level:
-    backgroundLayer = [[]]
-    foregroundLayer = [[]]
-    width = 0
-    height = 0
+    def __init__(self, game: "game.Game", name: str) -> None:
+        """Creates an instance of a `Level` object."""
+        data = game.resources.fetch_level_data(name)
 
-    tilemap: pygame.Surface
+        # Convert screen resolution into tile resolution.
+        x, y = game.display.get_size()
+        x = int((x + constants.TILE_SIZE - 1) / constants.TILE_SIZE)
+        y = int((y + constants.TILE_SIZE - 1) / constants.TILE_SIZE)
 
-    def __init__(self, name: str):
-        from resources import ResourceManager
-        data = ResourceManager.get_leveldata(name)
-        self.tilemap = ResourceManager.get_image("tilemap")
+        self.resolution = pygame.math.Vector2(x, y)
+        self.tilemap = game.resources.get_image("tilemap")
+        self.tileSize = data["height"]
+        self.display = game.display
+        self.layers = {}
 
-        layers = data["layers"]
-        for layer in layers:
-            currentLayer = None
-            if layer["name"] == "background":
-                currentLayer = self.backgroundLayer
-            elif layer["name"] == "foreground":
-                currentLayer = self.foregroundLayer
+        for layer in data["layers"]:
+            key = layer["name"]
+            value = Layer(layer)
+            self.layers[key] = value
 
-            self.width = layer["width"]
-            self.height = layer["height"]
-            data: list[int] = layer["data"]
+    def get_screen_position(self, layer: str, x: int, y: int) -> t.Tuple[float, float]:
+        """Converts tile coordinates into screen coordinates (top-left of a tile)."""
+        layerObject = self.layers[layer]
+        return layerObject.get_screen_position(self.display, x, y)
 
-            for y in range(self.height):
-                currentLayer.append([])
-                for x in range(self.width):
-                    currentLayer[y].append(int(data[self.width * y + x]))
+    def get_tile_position(self, layer: str, x: float, y: float) -> t.Tuple[int, int]:
+        """Converts screen coordinates into the nearest corresponding tile."""
+        layerObject = self.layers[layer]
+        return layerObject.get_tile_position(self.display, x, y)
 
-    """Get foregroudn tile at position x and y (in world units)"""
-    def getTileAt(self, x: int, y: int) -> int:
-        tileX = int(x / TILE_SIZE)
-        tileY = int(y / TILE_SIZE)
-        
-        if tileX >= self.width or tileY >= self.height or tileX < 0 or tileY < 0:
-            return 0
+    def get_tile(self, layer: str, x: float, y: float) -> t.Tuple[int, int, int]:
+        """Returns the tile at screen coordinates (x, y) for a specified layer."""
+        layerObject = self.layers[layer]
+        return layerObject.get_tile(self.display, x, y)
 
-        return self.foregroundLayer[self.height - tileY - 1][tileX]
+    def render(self, display: pygame.Surface) -> None:
+        """Renders all tiles to the screen."""
+        for layer in self.layers.values():
+            layer.render(self.tilemap, display)
 
-    """
-    Box collision check. (in world units).
-    It is assumed that the size of the box does not exceed 1x2 tiles
+class Layer:
+    def __init__(self, data: dict) -> None:
+        """Creates an instance of a `Layer` object."""
+        self.width = data["width"]
+        self.height = data["height"]
+        self.tiles = data["data"]
+        self.type = data["type"]
+        self.visible = data["visible"]
+        self.x = data["x"]
+        self.y = data["y"]
 
-    Returns boolean of collision
-    """
-    def collisionCheck(self, x1: int, x2: int, y1: int, y2: int) -> typing.Tuple[bool, bool, bool, bool]:
-        left: int = self.getTileAt(x1, y1) + self.getTileAt(x1, y2) + self.getTileAt(x1, (y1 + y2) / 2)
-        right: int = self.getTileAt(x2, y1) + self.getTileAt(x2, y2) + self.getTileAt(x2, (y1 + y2) / 2)
-        top: int = self.getTileAt((x1 + x2) / 2, y1)
-        bottom: int = self.getTileAt((x1 + x2) / 2, y2)
+    def calculate_offset(self, y: int) -> int:
+        """Returns the offset required to align the bottom-left of the tilemap and display."""
+        # Basically, both the tilemap and display start from the top left at (0, 0).
+        # However the tilemap extends well past the display vertically, so we have
+        # to compensate by adding a vertical offset to the tilemap. This offset is calculated
+        # such that the bottom of the tilemape ends up corresponding to the bottom of the display.
+        return (self.height * constants.TILE_SIZE) - y
 
-        print(f"l {left} r {right} t {top} b {bottom}")
+    def get_screen_position(self, display: pygame.Surface, x: int, y: int) -> t.Tuple[float, float]:
+        """Converts tile coordinates into screen coordinates (top-left of a tile)."""
+        displayX, displayY = display.get_size()
+        verticalOffset = self.calculate_offset(displayY)
 
-        return [left > 0, right > 0, top > 0, bottom > 0]
+        screenX = float(x * constants.TILE_SIZE)
+        screenY = float((y * constants.TILE_SIZE) - verticalOffset)
+        return (screenX, screenY)
 
-    def render(self, display: pygame.Surface):
-        from game import Game
+    def get_tile_position(self, display: pygame.Surface, x: float, y: float) -> t.Tuple[int, int]:
+        """Converts screen coordinates into the nearest corresponding tile."""
+        displayX, displayY = display.get_size()
+        verticalOffset = self.calculate_offset(displayY)
 
-        # Viewport offset as a number of tiles,
-        # Convert to int to round down
-        viewportTileOffset = (int(Game.viewport[0] / TILE_SIZE), int(Game.viewport[1] / TILE_SIZE))
+        tileX = int(x / constants.TILE_SIZE)
+        tileY = int((y + verticalOffset) / constants.TILE_SIZE)
+        return (tileX, tileY)
 
-        self.renderLayer(display, viewportTileOffset, self.backgroundLayer)
-        self.renderLayer(display, viewportTileOffset, self.foregroundLayer)
+    def get_tile(self, display: pygame.Surface, x: float, y: float) -> int:
+        """Returns the tile at screen coordinates (x, y) on this layer."""
+        tileX, tileY = self.get_tile_position(display, x, y)
+        index = self.width * tileY + tileX
 
-    def renderLayer(self, display: pygame.Surface, viewportTileOffset, layer):
-        from game import Game
+        if index < len(self.tiles):
+            return self.tiles[self.width * tileY + tileX]
 
-        for y in range(min(Game.viewportSizeTiles[1], self.height - viewportTileOffset[1])): # y: 0 corresponds to the bottom of the level
-            for x in range(min(Game.viewportSizeTiles[0], self.width - viewportTileOffset[0])): # Ensure we are within both tilemap and screen bounds
-                tileValue = layer[self.height - y - 1 - viewportTileOffset[1]][x + viewportTileOffset[0]]
+        return 0
 
-                if tileValue > 0:
-                    display.blit(self.tilemap, (-(Game.viewport[0] % TILE_SIZE) + x * TILE_SIZE, Game.viewportSize[1] - (Game.viewport[1] + (y + 1) * TILE_SIZE)), ((tileValue - 1) * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE))
+    def render(self, tilemap: pygame.Surface, display: pygame.Surface) -> None:
+        """Renders this layer's tiles to the screen."""
+        displayX, displayY = display.get_size()
+        verticalOffset = self.calculate_offset(displayY)
+        tileX, tileY = (0, -verticalOffset)
+
+        for tile in self.tiles:
+            # Only render the tile if it is physically present and is within the bounds of the display.
+            if tile > 0 and tileX < displayX and tileY < displayY:
+                source = pygame.Rect((tile - 1) * constants.TILE_SIZE, 0, constants.TILE_SIZE, constants.TILE_SIZE)
+                destination = pygame.Rect(tileX, tileY, constants.TILE_SIZE, constants.TILE_SIZE)
+                display.blit(tilemap, destination, source)
+
+            # Advance the tile coordinates each time we iterate.
+            if (tileX := tileX + constants.TILE_SIZE) > ((self.width - 1) * constants.TILE_SIZE):
+                tileY += constants.TILE_SIZE
+                tileX = 0

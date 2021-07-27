@@ -1,100 +1,70 @@
-from constants import *
-from entity import Entity
-from resources import ResourceManager
-
-import typing as t
-import pymunk
-import pymunk.pygame_util
+import collections
+import constants
+import resources
+import inputs
+import level
 
 import pygame.display
 import pygame.event
 import pygame.time
-import pygame.key
 import pygame
 
 class Game:
-    display: pygame.Surface
-    clock: pygame.time.Clock
+    def __init__(self) -> None:
+        """Initialises an instance of the Game."""
+        pygame.init()
 
-    phySpace = pymunk.Space()
-    displayScale = 1
-    running = True
-    entities = []
-    bodies = []
+        # Initialise relevant PyGame subsystems.
+        resolution = (1366, 768)
+        flags = pygame.SCALED | pygame.SHOWN
+        self.display = pygame.display.set_mode(resolution, flags)
+        self.clock = pygame.time.Clock()
 
-    viewport = pygame.Vector2(0, 0)
-    viewportSize: t.Tuple[int, int]
-    viewportSizeTiles: t.Tuple[int, int] # Viewport size in tiles
+        # Internal game subsystems.
+        self.keyboard = inputs.Keyboard()
+        self.mouse = inputs.Mouse()
+        self.resources = resources.Resources()
 
-    from level import Level
-    currentLevel: Level = ResourceManager.get_level("level1")
+        # Internal game variables.
+        self.levels = collections.deque()
+        self.currentLevel = None
+        self.running = True
+        self.entities = []
 
-    @classmethod
-    def add_entity(cls, ent: Entity) -> None:
-        """Add an entity to the game's internal tracking system."""
-        cls.entities.append(ent)
+    def add_entity(self, entity: object) -> None:
+        """Adds an entity to the internal entity tracking system."""
+        self.entities.append(entity)
 
-        if hasattr(ent, "body") and hasattr(ent, "shapes"):
-            cls.phySpace.add(ent.body, *ent.shapes)
-            cls.bodies.append(ent.body)
+    def add_level(self, level: "level.Level") -> None:
+        """Adds a level to the game."""
+        self.levels.append(level)
 
-    @classmethod
-    def tick(cls, deltaTime: float) -> None:
-        # Update the Pymunk physics space.
-        cls.phySpace.step(deltaTime)
-
-        """Update the game's physics state and ticks all tracked entities."""
+    def tick(self, deltaTime: float) -> None:
+        """Updates the game's internal state."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                cls.running = False
+                self.running = False
 
-        # Tick all tracked entities.
-        for entity in cls.entities:
-            entity.tick(deltaTime)
+        for entity in self.entities:
+            entity.tick(self, deltaTime)
 
-    @classmethod
-    def render(cls, surface: pygame.Surface) -> None:
-        """Draws all entities onto the specified surface."""
-        cls.currentLevel.render(surface)
+    def render(self) -> None:
+        """Renders all entities and tiles to the screen."""
+        background = constants.BACKGROUND_COLOUR
+        self.display.fill(background)
+        self.currentLevel.render(self.display)
 
-        for entity in cls.entities:
-            entity.render(surface)
+        for entity in self.entities:
+            entity.render(self.display)
 
-        cls.phySpace.debug_draw(cls.options)
         pygame.display.flip()
 
-    @classmethod
-    def run(cls) -> None:
-        """Initialises and starts the game."""
-        pygame.init() # Initialise all PyGame subsystems before creating objects.
-        cls.viewportSize = (1600, 900)
-        cls.viewportSizeTiles = (int((cls.viewportSize[0] + TILE_SIZE - 1) / TILE_SIZE), int((cls.viewportSize[1] / TILE_SIZE + TILE_SIZE - 1))) # Ensure that we round up
+    def run(self) -> None:
+        """Starts the game loop. This function does not return."""
+        self.currentLevel = self.levels.popleft()
 
-        flags = pygame.SCALED | pygame.SHOWN
-        cls.display = pygame.display.set_mode(size=cls.viewportSize, flags=flags)
-        cls.clock = pygame.time.Clock()
-
-        # Initialise Pymunk and setup a suitable physics space.
-        cls.phySpace.gravity = 0, -9.8 * UNITS_PER_METRE
-
-        for i, row in enumerate(cls.currentLevel.foregroundLayer):
-            for j, tile in enumerate(row):
-                if tile > 0:
-                    x, y = j * TILE_SIZE, (cls.currentLevel.height - i - 1) * TILE_SIZE
-                    phyBody = pymunk.Body(mass=1.0, moment=1.0, body_type=pymunk.Body.STATIC)
-                    phyBody.position = (x + TILE_SIZE / 2 - 1, y + TILE_SIZE / 2 - 1)
-                    phyShape = pymunk.Poly.create_box(phyBody, size=(TILE_SIZE + 2, TILE_SIZE + 2))
-                    phyShape.friction = 0.9;
-                    phyShape.elasticity = 0
-                    Game.phySpace.add(phyBody, phyShape)
-
-        cls.options = pymunk.pygame_util.DrawOptions(cls.display)
-        cls.options.flags = pymunk.SpaceDebugDrawOptions.DRAW_SHAPES | pymunk.SpaceDebugDrawOptions.DRAW_COLLISION_POINTS
-        pymunk.pygame_util.positive_y_is_up = True
-
-        # Handle event dispatch here.
-        while cls.running:
-            deltaTime = cls.clock.get_time() / 1000
-            cls.tick(deltaTime)
-            cls.render(cls.display)
-            cls.clock.tick(60)
+        while self.running:
+            deltaTime = self.clock.get_time() / 1000
+            self.render()
+            self.tick(deltaTime)
+            self.clock.tick(60)

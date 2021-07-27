@@ -1,58 +1,89 @@
-from constants import *
-from entity import Entity
-from game import Game
-from inputs import Keyboard
-from resources import ResourceManager
+import constants
+import game
 
-import pymunk
-
+import pygame.transform
 import pygame.locals
 import pygame.math
 import pygame
 
+class Player:
+    def __init__(self, game: "game.Game") -> None:
+        """Initialises an instance of the `Player` class."""
+        surface = game.resources.get_image("max")
+        self.pixels = pygame.math.Vector2(constants.TILE_SIZE * 2, constants.TILE_SIZE * 4)
+        self.sprite = pygame.transform.scale(surface, (int(self.pixels.x), int(self.pixels.y)))
 
-class Player(Entity):
-    wasJumping = False
+        spawnXCoordinate, spawnYCoordinate = game.display.get_size()
+        spawnXCoordinate = (spawnXCoordinate / 10.0) - (self.pixels.x / 2)
+        spawnYCoordinate = (spawnYCoordinate / 1.15) - (self.pixels.y / 2)
+        self.position = pygame.math.Vector2(spawnXCoordinate, spawnYCoordinate)
+        self.velocity = pygame.math.Vector2()
 
-    def __init__(self):
-        surface = ResourceManager.get_image("max")
-        self.sprite = pygame.transform.scale(surface, (TILE_SIZE, TILE_SIZE * 2))
-
-        # Physics shapes go into self.shapes as a list.
-        self.body = pymunk.Body(mass=PLAYER_MASS, moment=1.0, body_type=pymunk.Body.DYNAMIC)
-        self.body.position = (TILE_SIZE, TILE_SIZE * 10)
-
-        box = pymunk.Poly.create_box_bb(self.body, pymunk.BB(0, 0, TILE_SIZE, TILE_SIZE * 2))
-        box.friction = 0.9;
-        box.elasticity = 0
-        
-        self.shapes = [box]
-
-    def tick(self, deltaTime: float) -> None:
+    def tick(self, game: "game.Game", deltaTime: float) -> None:
         """Updates the player's internal state."""
-        horizontalVelocity = 0
+        groundCheckX = self.position.x + (self.pixels.x / 2)
+        groundCheckY = self.position.y + self.pixels.y
+        groundTile = game.currentLevel.get_tile("foreground", groundCheckX, groundCheckY)
+        grounded = groundTile > 0
 
-        if Keyboard.pressed(pygame.locals.K_a):
-            self.body.apply_force_at_local_point([-PLAYER_MOVEMENT_FORCE, 0])
-        if Keyboard.pressed(pygame.locals.K_d):
-            self.body.apply_force_at_local_point([PLAYER_MOVEMENT_FORCE, 0])
+        rightCheckX = self.position.x + self.pixels.x
+        rightCheckY = self.position.y + (self.pixels.y / 2)
+        rightTile = game.currentLevel.get_tile("foreground", rightCheckX, rightCheckY)
+        righted = rightTile > 0
 
-        if Keyboard.pressed(pygame.locals.K_SPACE):
-            if not self.wasJumping and\
-                Game.currentLevel.collisionCheck(self.body.position.x, self.body.position.x + TILE_SIZE, self.body.position.y + TILE_SIZE * 2, self.body.position.y)[3]:
-                self.body.apply_impulse_at_local_point([0, PLAYER_JUMP_FORCE])
-            wasJumping = True
+        leftCheckX = self.position.x
+        leftCheckY = self.position.y + (self.pixels.y / 2)
+        leftTile = game.currentLevel.get_tile("foreground", leftCheckX, leftCheckY)
+        lefted = leftTile > 0
+
+        topCheckX = self.position.x + (self.pixels.x / 2)
+        topCheckY = self.position.y
+        topTile = game.currentLevel.get_tile("foreground", topCheckX, topCheckY)
+        topped = topTile > 0
+
+        # Handle any player input after collision checks have been computed.
+        if game.keyboard.pressed(pygame.locals.K_a):
+            self.velocity.x -= constants.PLAYER_MOVEMENT_SPEED * deltaTime
+        if game.keyboard.pressed(pygame.locals.K_d):
+            self.velocity.x += constants.PLAYER_MOVEMENT_SPEED * deltaTime
+        if game.keyboard.pressed(pygame.locals.K_SPACE) and grounded:
+            self.velocity.y = -(constants.PLAYER_JUMPING_SPEED * deltaTime)
+            grounded = False
+
+        # Handle any new collisions if needed.
+        if lefted:
+            tileX, tileY = game.currentLevel.get_tile_position("foreground", leftCheckX, leftCheckY)
+            snapX, snapY = game.currentLevel.get_screen_position("foreground", tileX, tileY)
+            self.position.x = snapX + self.pixels.x + 1
+            self.velocity.x = 0
+        if righted:
+            tileX, tileY = game.currentLevel.get_tile_position("foreground", rightCheckX, rightCheckY)
+            snapX, snapY = game.currentLevel.get_screen_position("foreground", tileX, tileY)
+            self.position.x = snapX - self.pixels.x - 1
+            self.velocity.x = 0
+
+        if topped:
+            tileX, tileY = game.currentLevel.get_tile_position("foreground", topCheckX, topCheckY)
+            snapX, snapY = game.currentLevel.get_screen_position("foreground", tileX, tileY)
+            self.position.y = snapY + constants.TILE_SIZE
+            self.velocity.y = 0
+        elif grounded:
+            tileX, tileY = game.currentLevel.get_tile_position("foreground", groundCheckX, groundCheckY)
+            snapX, snapY = game.currentLevel.get_screen_position("foreground", tileX, tileY)
+            self.position.y = snapY - self.pixels.y
+            self.velocity.y = 0
+
+            # Squishing code (very funny, squishes player to 0 however).
+            # squishFactor = 1 / abs(1 + (snapY - self.pixels.y) / 10000)
+            # self.pixels = pygame.math.Vector2(self.pixels.x, self.pixels.y * squishFactor)
+            # self.sprite = pygame.transform.scale(self.sprite, (int(self.pixels.x), int(self.pixels.y)))
         else:
-            wasJumping = False
+            self.velocity.y += constants.WORLD_GRAVITY * deltaTime
 
-        self.body.angle = 0
-        self.body.space.reindex_shapes_for_body(self.body)
+        # Update the position and scale the velocity to give an impression of friction.
+        self.position += self.velocity
+        self.velocity.x *= 0.8
 
-        # Ensure that the player remains in the centre of the screen while scrolling.
-        Game.viewport.x = max(0, self.body.position.x - Game.viewportSize[0] / 2)
-
-    def render(self, surface: pygame.Surface) -> None:
-        """Draws the player's sprite to the specified surface."""
-        surface.blit(self.sprite,
-            (self.body.position.x - Game.viewport[0],
-            Game.viewportSize[1] - self.body.position.y - Game.viewport[1] - TILE_SIZE * 2))
+    def render(self, display: pygame.Surface) -> None:
+        """Renders the player sprite to the screen."""
+        display.blit(self.sprite, self.position)
