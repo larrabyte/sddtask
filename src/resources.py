@@ -33,7 +33,13 @@ class Resources:
         self.data[name] = surface
         return surface
 
-    def getLevel(self, name: str) -> "level.Level":
+    def get_level(self, name: str) -> level.Level:
         """Creates and/or returns a `Level` object."""
-        if (level := self.levels.get(name, None)) is not None:
-            return level
+
+        if (levelObj := self.levels.get(name, None)) is not None:
+            return levelObj
+        else:
+            levelObj = level.Level(name)
+            self.levels[name] = levelObj
+
+            return levelObj
