@@ -9,10 +9,19 @@ import pygame.event
 import pygame.time
 import pygame
 
+instance = None
+
 class Game:
+    viewport = (0, 0)
+
     def __init__(self) -> None:
+        global instance
+
         """Initialises an instance of the Game."""
         pygame.init()
+
+        assert(instance == None)
+        instance = self
 
         # Initialise relevant PyGame subsystems.
         resolution = (1366, 768)
@@ -30,6 +39,8 @@ class Game:
         self.currentLevel = None
         self.running = True
         self.entities = []
+
+        self.viewportSize = self.display.get_size()
 
     def add_entity(self, entity: object) -> None:
         """Adds an entity to the internal entity tracking system."""
