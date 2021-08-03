@@ -27,8 +27,8 @@ class Player:
         if game.keyboard.pressed(pygame.locals.K_d):
             self.velocity.x += constants.PLAYER_MOVEMENT_SPEED
 
-        a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
-        b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
+        a = pygame.math.Vector2(self.position.x + game.viewport.x, self.position.y + self.size.y + game.viewport.y)
+        b = pygame.math.Vector2(self.position.x + self.size.x + game.viewport.x, self.position.y + game.viewport.y)
         collision = game.currentLevel.collision_check(a, b)
 
         if collision.top:
@@ -52,8 +52,8 @@ class Player:
             self.velocity.y += constants.WORLD_GRAVITY * deltaTime
 
         # Recompute collisions now that the player's vertical position has been resolved.
-        a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
-        b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
+        a = pygame.math.Vector2(self.position.x + game.viewport.x, self.position.y + self.size.y + game.viewport.y)
+        b = pygame.math.Vector2(self.position.x + self.size.x + game.viewport.x, self.position.y + game.viewport.y)
         collision = game.currentLevel.collision_check(a, b)
 
         if collision.left:
@@ -67,6 +67,14 @@ class Player:
             snapX = int(self.position.x + self.size.x) & ~(constants.TILE_SIZE - 1)
             self.position.x = snapX - self.size.x - 1
             self.velocity.x = 0
+
+        # Update the viewport's position and ensure that the player can't go backwards.
+        if self.position.x >= (game.resolution.x / 2):
+            game.viewport.x += self.velocity.x * deltaTime
+            self.position.x = game.resolution.x / 2
+
+        if self.position.x < 0:
+            self.position.x = 0
 
         # Update the position and scale the velocity to give an impression of friction.
         self.position += self.velocity * deltaTime

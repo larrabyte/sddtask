@@ -1,12 +1,14 @@
 import datatypes as dt
 import collections
 import resources
+import constants
 import inputs
 import level
 
 import pygame.display
 import pygame.event
 import pygame.time
+import pygame.math
 import pygame
 
 class Game:
@@ -15,13 +17,13 @@ class Game:
         pygame.init()
 
         # Initialise relevant PyGame subsystems.
-        resolution = (1366, 768)
+        resolution = (1376, 768)
         flags = pygame.SCALED | pygame.SHOWN | pygame.HWSURFACE | pygame.DOUBLEBUF
         self.display = pygame.display.set_mode(resolution, flags, vsync=1)
         self.clock = pygame.time.Clock()
 
         self.resolution = dt.IntVector2.from_tuple(self.display.get_size())
-        self.viewport = dt.IntVector2(0, 0)
+        self.viewport = pygame.math.Vector2(0.0, 0.0)
 
         # Internal game subsystems.
         self.keyboard = inputs.Keyboard()
@@ -53,6 +55,7 @@ class Game:
 
     def render(self) -> None:
         """Renders all entities and tiles to the screen."""
+        self.display.fill(constants.BACKGROUND_COLOUR)
         self.currentLevel.render(self.display, self.viewport, self.resolution)
 
         for entity in self.entities:
