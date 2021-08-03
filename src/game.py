@@ -1,5 +1,5 @@
+import datatypes as dt
 import collections
-import constants
 import resources
 import inputs
 import level
@@ -9,25 +9,19 @@ import pygame.event
 import pygame.time
 import pygame
 
-instance = None
-
 class Game:
-    viewport = (0, 0)
-
     def __init__(self) -> None:
-        global instance
-
         """Initialises an instance of the Game."""
         pygame.init()
 
-        assert(instance == None)
-        instance = self
-
         # Initialise relevant PyGame subsystems.
         resolution = (1366, 768)
-        flags = pygame.SCALED | pygame.SHOWN
-        self.display = pygame.display.set_mode(resolution, flags)
+        flags = pygame.SCALED | pygame.SHOWN | pygame.HWSURFACE | pygame.DOUBLEBUF
+        self.display = pygame.display.set_mode(resolution, flags, vsync=1)
         self.clock = pygame.time.Clock()
+
+        self.resolution = dt.IntVector2.from_tuple(self.display.get_size())
+        self.viewport = dt.IntVector2(0, 0)
 
         # Internal game subsystems.
         self.keyboard = inputs.Keyboard()
@@ -39,8 +33,6 @@ class Game:
         self.currentLevel = None
         self.running = True
         self.entities = []
-
-        self.viewportSize = self.display.get_size()
 
     def add_entity(self, entity: object) -> None:
         """Adds an entity to the internal entity tracking system."""
@@ -61,9 +53,7 @@ class Game:
 
     def render(self) -> None:
         """Renders all entities and tiles to the screen."""
-        background = constants.BACKGROUND_COLOUR
-        self.display.fill(background)
-        self.currentLevel.render(self.display)
+        self.currentLevel.render(self.display, self.viewport, self.resolution)
 
         for entity in self.entities:
             entity.render(self.display)
@@ -75,7 +65,6 @@ class Game:
         self.currentLevel = self.levels.popleft()
 
         while self.running:
-            deltaTime = self.clock.get_time() / 1000
             self.render()
+            deltaTime = self.clock.tick(0) / 1000.0
             self.tick(deltaTime)
-            self.clock.tick(60)
