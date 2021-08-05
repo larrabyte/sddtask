@@ -1,4 +1,4 @@
-import typing
+import typing as t
 import constants
 import game
 
@@ -43,7 +43,7 @@ class Level:
 
         return 0
 
-    def collision_check(self, a: pygame.math.Vector2, b: pygame.math.Vector2) -> typing.List[ bool ]:
+    def collision_check(self, a: pygame.math.Vector2, b: pygame.math.Vector2) -> t.List[bool]:
         """Returns whether any physical tiles are adjacent to the given world coordinates."""
         leftTop = self.get_foreground_tile(a.x, b.y + 4)
         leftMiddle = self.get_foreground_tile(a.x, (a.y + b.y) / 2)
@@ -67,7 +67,7 @@ class Level:
 
         return [left > 0, right > 0, top > 0, bottom > 0]
 
-    def render(self, display: pygame.Surface, viewport, resolution) -> None:
+    def render(self, display: pygame.Surface, viewport: pygame.math.Vector2, resolution: t.Tuple[int, int]) -> None:
         """Renders each layer to the display."""
         # Calculate the viewport offset as a number of tiles (rounded down).
         offsetX = int(viewport.x) >> (constants.TILE_SHIFT)
@@ -80,12 +80,14 @@ class Level:
         # Render the foreground layer last.
         self.render_layer(display, viewport, resolution, (offsetX, offsetY), self.foregroundLayer)
 
-    def render_layer(self, display: pygame.Surface, viewport, resolution, offset, layer: list) -> None:
+    def render_layer(self, display: pygame.Surface, viewport: pygame.math.Vector2, resolution: t.Tuple[int, int], offset: t.Tuple[int, int], layer: list) -> None:
         """Renders a specific layer given a display and viewport information."""
-
-        for y in range(min(self.viewportSizeTiles[1], self.height - offset[1])): # When y = 0, we are at the bottom of the level.
-            for x in range(min(self.viewportSizeTiles[0], self.width - offset[0])): # Ensure we are within both the tilemap and screen bounds.
+        for y in range(min(self.viewportSizeTiles[1], self.height - offset[1])):
+            # When y = 0, we are at the bottom of the level.
+            for x in range(min(self.viewportSizeTiles[0], self.width - offset[0])):
+                # Ensure we are within both the tilemap and screen bounds.
                 if (tile := layer[self.height - y - offset[1] - 1][x + offset[0]]) > 0:
+                    # display.blit(source, destination, area)
                     display.blit(self.tilemap,
-                        (-(viewport[0] % constants.TILE_SIZE) + x * constants.TILE_SIZE, resolution[1] - (viewport[1] + (y + 1) * constants.TILE_SIZE)),
-                        ((tile - 1) * constants.TILE_SIZE, 0, constants.TILE_SIZE, constants.TILE_SIZE)) # Source position
+                        (x * constants.TILE_SIZE - (viewport[0] % constants.TILE_SIZE), resolution[1] - (viewport[1] + (y + 1) * constants.TILE_SIZE)),
+                        ((tile - 1) * constants.TILE_SIZE, 0, constants.TILE_SIZE, constants.TILE_SIZE))
