@@ -1,4 +1,3 @@
-import level
 import json
 import os
 
@@ -8,7 +7,6 @@ import pygame
 class Resources:
     def __init__(self) -> None:
         """Initialises an instance of the Resource Manager."""
-        self.levels = {}
         self.data = {}
 
     def fetch_level_data(self, name: str) -> dict:
@@ -25,21 +23,10 @@ class Resources:
 
         try: # PyGame on Apple Silicon doesn't support non-BMP images.
             normal = os.path.join("images", f"{name}.png")
-            surface = pygame.image.load(normal)
+            surface = pygame.image.load(normal).convert_alpha()
         except pygame.error:
             fallback = os.path.join("images", f"{name}.bmp")
-            surface = pygame.image.load(fallback)
+            surface = pygame.image.load(fallback).convert_alpha()
 
         self.data[name] = surface
         return surface
-
-    def get_level(self, name: str) -> level.Level:
-        """Creates and/or returns a `Level` object."""
-
-        if (levelObj := self.levels.get(name, None)) is not None:
-            return levelObj
-        else:
-            levelObj = level.Level(name)
-            self.levels[name] = levelObj
-
-            return levelObj
