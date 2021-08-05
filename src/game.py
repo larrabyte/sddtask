@@ -1,4 +1,3 @@
-import datatypes as dt
 import collections
 import resources
 import constants
@@ -17,12 +16,12 @@ class Game:
         pygame.init()
 
         # Initialise relevant PyGame subsystems.
-        resolution = (1376, 768)
+        resolution = (1366, 768)
         flags = pygame.SCALED | pygame.SHOWN | pygame.HWSURFACE | pygame.DOUBLEBUF
         self.display = pygame.display.set_mode(resolution, flags, vsync=1)
         self.clock = pygame.time.Clock()
 
-        self.resolution = dt.IntVector2.from_tuple(self.display.get_size())
+        self.viewportSize = self.display.get_size()
         self.viewport = pygame.math.Vector2(0.0, 0.0)
 
         # Internal game subsystems.
@@ -56,7 +55,7 @@ class Game:
     def render(self) -> None:
         """Renders all entities and tiles to the screen."""
         self.display.fill(constants.BACKGROUND_COLOUR)
-        self.currentLevel.render(self.display, self.viewport, self.resolution)
+        self.currentLevel.render(self.display, self.viewport, self.viewportSize)
 
         for entity in self.entities:
             entity.render(self.display)
