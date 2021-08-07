@@ -12,8 +12,8 @@ class Level:
         data = game.resources.fetch_level_data(name)
         self.tilemap = game.resources.get_image("tilemap")
 
-        tileResX = int(game.viewportSize[0] + constants.TILE_SIZE - 1) & ~(constants.TILE_SIZE - 1)
-        tileResY = int(game.viewportSize[1] + constants.TILE_SIZE - 1) & ~(constants.TILE_SIZE - 1)
+        tileResX = int(game.viewportSize[0] + constants.WORLD_TILE_SIZE - 1) & ~(constants.WORLD_TILE_SIZE - 1)
+        tileResY = int(game.viewportSize[1] + constants.WORLD_TILE_SIZE - 1) & ~(constants.WORLD_TILE_SIZE - 1)
         self.viewportSizeTiles = (tileResX, tileResY)
 
         self.width = data["width"]
@@ -34,8 +34,8 @@ class Level:
 
     def get_foreground_tile(self, x: float, y: float) -> int:
         """Returns the foreground tile at world coordinates (x, y)."""
-        tileX = int(x / constants.TILE_SIZE)
-        tileY = int(y / constants.TILE_SIZE)
+        tileX = int(x / constants.WORLD_TILE_SIZE)
+        tileY = int(y / constants.WORLD_TILE_SIZE)
 
         # Only access the foreground layer if tileX and tileY are in bounds.
         if 0 <= tileX <= self.width and 0 <= tileY <= self.height:
@@ -70,8 +70,8 @@ class Level:
     def render(self, display: pygame.Surface, viewport: pygame.math.Vector2, resolution: t.Tuple[int, int]) -> None:
         """Renders each layer to the display."""
         # Calculate the viewport offset as a number of tiles (rounded down).
-        offsetX = int(viewport.x) >> (constants.TILE_SHIFT)
-        offsetY = int(viewport.y) >> (constants.TILE_SHIFT)
+        offsetX = int(viewport.x) >> (constants.WORLD_TILE_SHIFT)
+        offsetY = int(viewport.y) >> (constants.WORLD_TILE_SHIFT)
 
         for layer in self.backgroundLayers:
             # Render each background layer by iterating through the list of background layers.
@@ -89,5 +89,5 @@ class Level:
                 if (tile := layer[self.height - y - offset[1] - 1][x + offset[0]]) > 0:
                     # display.blit(source, destination, area)
                     display.blit(self.tilemap,
-                        (x * constants.TILE_SIZE - (viewport[0] % constants.TILE_SIZE), resolution[1] - (viewport[1] + (y + 1) * constants.TILE_SIZE)),
-                        ((tile - 1) * constants.TILE_SIZE, 0, constants.TILE_SIZE, constants.TILE_SIZE))
+                        (x * constants.WORLD_TILE_SIZE - (viewport[0] % constants.WORLD_TILE_SIZE), resolution[1] - (viewport[1] + (y + 1) * constants.WORLD_TILE_SIZE)),
+                        ((tile - 1) * constants.WORLD_TILE_SIZE, 0, constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE))

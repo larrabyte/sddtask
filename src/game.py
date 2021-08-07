@@ -32,12 +32,23 @@ class Game:
         # Internal game variables.
         self.levels = collections.deque()
         self.currentLevel = None
+        self.entities = set()
         self.running = True
-        self.entities = []
+
+    def calculate_offset(self, position: pygame.math.Vector2) -> pygame.math.Vector2:
+        """Calculates the offset required for `position` to be rendered."""
+        screen = self.display.get_size()
+        position.x = position.x - self.viewport[0]
+        position.y = screen[1] - position.y
+        return position
 
     def add_entity(self, entity: object) -> None:
         """Adds an entity to the internal entity tracking system."""
-        self.entities.append(entity)
+        self.entities.add(entity)
+
+    def remove_entity(self, entity: object) -> None:
+        """Removes an entity from the internal entity tracking system."""
+        self.entities.remove(entity)
 
     def add_level(self, level: "level.Level") -> None:
         """Adds a level to the game."""
@@ -49,12 +60,12 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
 
-        for entity in self.entities:
+        for entity in self.entities.copy():
             entity.tick(self, deltaTime)
 
     def render(self) -> None:
         """Renders all entities and tiles to the screen."""
-        self.display.fill(constants.BACKGROUND_COLOUR)
+        self.display.fill(constants.WORLD_BACKGROUND_COLOUR)
         self.currentLevel.render(self.display, self.viewport, self.viewportSize)
 
         for entity in self.entities:
