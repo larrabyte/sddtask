@@ -49,11 +49,19 @@ class Player:
             else:
                 # Bottom-side collision: snap to the upper bound of the collided tile.
                 snapY = int(self.position.y) & ~(constants.WORLD_TILE_SIZE - 1)
-                self.position.y = snapY + constants.WORLD_TILE_SIZE
+                self.position.y = snapY + constants.WORLD_TILE_SIZE - 0.1
                 self.velocity.y = 0
         else:
             # No vertical collision: apply gravity as normal.
             self.velocity.y += constants.WORLD_GRAVITY * deltaTime
+
+        if game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel > 0:
+            # If the player is holding space and jetpack fuel is available, update as needed.
+            self.velocity.y += constants.PLAYER_JETPACK_SPEED * deltaTime
+            self.jetpackFuel -= 1
+        elif not game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel < constants.PLAYER_JETPACK_MAX:
+            # If space isn't being held and jetpack fuel isn't maxed out, add.
+            self.jetpackFuel += 1
 
         # Recompute collisions now that the player's vertical position has been resolved.
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
@@ -76,14 +84,6 @@ class Player:
             # Ensure the player can't go off screen to the left.
             self.position.x = 0
 
-        if game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel > 0:
-            # If the player is holding space and jetpack fuel is available, update as needed.
-            self.velocity.y += constants.PLAYER_JUMPING_SPEED * deltaTime
-            self.jetpackFuel -= 1
-        elif not game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel < constants.PLAYER_JETPACK_MAX:
-            # If space isn't being held and jetpack fuel isn't maxed out, add.
-            self.jetpackFuel += 1
-
         # Update the player and game state accordingly.
         game.viewport.x = max(0, self.position.x - game.viewportSize[0] / 2)
         self.position += self.velocity * deltaTime
@@ -105,7 +105,6 @@ class Player:
         """Updates the player's internal state."""
         self.update_movement(game, deltaTime)
         self.update_gun_state(game)
-
 
     def render(self, display: pygame.Surface) -> None:
         """Renders the player sprite to the screen."""

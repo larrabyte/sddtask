@@ -1,32 +1,25 @@
+import constants
+import game
+
+import pygame.transform
+import pygame.math
 import pygame
-import random
-from entity import Entity
-from player import Player
-player = Player()
 
-class Enemy(Entity):
-    def __init__(self):
-        super(Enemy, self). __init__()
-        self.surf = pygame.surface((30, 10))
-        self.surf.fill((255, 0, 0))
-        self.rect = self.surf.get_rect(
-            center = (
-                random.randint(150, 200),
-                random.randint(0,150)
-            )
-        )
-        self.speed = random.randint(7,15)
+class Turret:
+    def __init__(self, game: "game.Game", position: pygame.math.Vector2) -> None:
+        """Instantiates an instance of the `Turret` class."""
+        sprite = game.resources.get_image("turret")
+        self.size = pygame.math.Vector2(constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE)
+        self.sprite = pygame.transform.scale(sprite, (int(self.size.x), int(self.size.y)))
+        self.position = position
+        self.game = game
 
-def update(self):
-    self.rect.move_ip(-self.speed,0)
+    def tick(self, game: "game.Game", deltaTime: float) -> None:
+        """Updates the turret's internal state."""
+        pass
 
-if pygame.sprite.spritecollideany(Player, Enemy):
-    Player.kill()
-    running = False
-
-enemies = pygame.sprite.Group()
-all_sprites = pygame.sprite.Group()
-all_sprites.add(player)
-
-for entity in all_sprites:
-    pygame.surface.blit(entity.surf, entity.rect)
+    def render(self, display: pygame.Surface) -> None:
+        """Renders this turret to the screen."""
+        position = pygame.Vector2(self.position.x, self.position.y + self.size.y)
+        position = self.game.calculate_offset(position)
+        display.blit(self.sprite, position)

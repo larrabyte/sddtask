@@ -1,5 +1,6 @@
 import typing as t
 import constants
+import enemies
 import game
 
 import pygame.math
@@ -29,6 +30,20 @@ class Level:
             if layer["name"] == "foreground":
                 if self.foregroundLayer is None:
                     self.foregroundLayer = current
+
+            elif layer["name"] == "enemies":
+                # If this layer contains enemy spawn points, add them as entities.
+                for y in range(self.height):
+                    for x in range(self.width):
+                        identifier = current[y][x]
+
+                        if identifier == 225:
+                            tileY = self.height - y - 1
+                            print(f"Spawning turret at {x}, {tileY}!")
+                            position = pygame.math.Vector2(x * constants.WORLD_TILE_SIZE, tileY * constants.WORLD_TILE_SIZE)
+                            enemy = enemies.Turret(game, position)
+                            game.add_entity(enemy)
+
             else:
                 self.backgroundLayers.append(current)
 

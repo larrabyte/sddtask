@@ -7,8 +7,8 @@ import pygame
 class Bullet:
     def __init__(self, game: "game.Game", position: pygame.math.Vector2, velocity: pygame.math.Vector2) -> None:
         """Initialises an instance of the `Bullet` class."""
-        surface = game.resources.get_image("funnybullet")
-        self.size = pygame.math.Vector2(12, 12)
+        surface = game.resources.get_image("bullet")
+        self.size = pygame.math.Vector2(16, 16)
         self.sprite = pygame.transform.scale(surface, (int(self.size.x), int(self.size.y)))
         self.game = game
 
@@ -20,14 +20,13 @@ class Bullet:
         screen = game.display.get_size()
         boundedX = 0 <= self.position.x <= screen[0] + game.viewport.x
         boundedY = 0 <= self.position.y <= screen[1] + game.viewport.y
-        bounded = boundedX and boundedY
 
-        if bounded:
+        if boundedX and boundedY:
             a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
             b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
             collision = game.currentLevel.collision_check(a, b)
 
-        if not bounded or any(collision):
+        if not (boundedX and boundedY) or any(collision):
             game.remove_entity(self)
 
         self.velocity.y += constants.WORLD_GRAVITY * deltaTime
