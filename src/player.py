@@ -11,16 +11,14 @@ import pygame
 class Player:
     def __init__(self, game: "game.Game") -> None:
         """Initialises an instance of the `Player` class."""
-        surface = game.resources.get_image("max")
         self.size = pygame.math.Vector2(constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE * 2)
-        self.sprite = pygame.transform.scale(surface, (int(self.size.x), int(self.size.y)))
+        self.sprite = game.resources.get_image("max")
         self.game = game
+        self.grounded = False
 
-        screenX, screenY = game.display.get_size()
-        screenX = (screenX / 10.0) - (self.size.x / 2)
-        screenY = (screenY / 1.15) - (self.size.y / 2)
-        self.position = pygame.math.Vector2(screenX, screenY)
+        self.position = pygame.math.Vector2(64, 512)
         self.velocity = pygame.math.Vector2(0.0, 0.0)
+        self.direction = 0 # Left or right? 1 - left, 0 - right
 
         # Player game attributes.
         self.jetpackFuel = constants.PLAYER_JETPACK_MAX
@@ -30,8 +28,10 @@ class Player:
         """Updates player movement based on `deltaTime`."""
         if game.keyboard.pressed(pygame.locals.K_a):
             self.velocity.x -= constants.PLAYER_MOVEMENT_SPEED
+            self.direction = 1
         if game.keyboard.pressed(pygame.locals.K_d):
             self.velocity.x += constants.PLAYER_MOVEMENT_SPEED
+            self.direction = 0
 
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
         b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
@@ -43,6 +43,8 @@ class Player:
             self.position.y = snapY - self.size.y - 1
             self.velocity.y = 0
         elif collision[3]:
+            self.grounded = True
+
             if game.keyboard.pressed(pygame.locals.K_SPACE):
                 # Player is grounded and key pressed: apply jumping force.
                 self.velocity.y = constants.PLAYER_JUMPING_SPEED
@@ -58,10 +60,10 @@ class Player:
         if game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel > 0:
             # If the player is holding space and jetpack fuel is available, update as needed.
             self.velocity.y += constants.PLAYER_JETPACK_SPEED * deltaTime
-            self.jetpackFuel -= 1
+            self.jetpackFuel -= 60 * deltaTime
         elif not game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel < constants.PLAYER_JETPACK_MAX:
             # If space isn't being held and jetpack fuel isn't maxed out, add.
-            self.jetpackFuel += 1
+            self.jetpackFuel += 15 * deltaTime
 
         # Recompute collisions now that the player's vertical position has been resolved.
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
@@ -86,6 +88,8 @@ class Player:
 
         # Update the player and game state accordingly.
         game.viewport.x = max(0, self.position.x - game.viewportSize[0] / 2)
+        game.viewport.y = max(0, self.position.y - game.viewportSize[1] / 2)
+
         self.position += self.velocity * deltaTime
         self.velocity.x *= constants.PLAYER_FRICTION_COEFFICIENT
 
@@ -110,7 +114,16 @@ class Player:
         """Renders the player sprite to the screen."""
         playerPosition = pygame.Vector2(self.position.x, self.position.y + self.size.y)
         playerPosition = self.game.calculate_offset(playerPosition)
-        display.blit(self.sprite, playerPosition)
+
+        timeSinceStart = pygame.time.get_ticks() # Time since pygame init called in ms
+        spriteSourcePos = pygame.Vector2(0, 0);
+        if self.grounded: # Walking animation
+            if abs(self.velocity.x) >= constants.PLAYER_MOVEMENT_SPEED: # Check if player is moving
+                spriteSourcePos.x = int(((timeSinceStart % 1000) / 250)) * constants.WORLD_TILE_SIZE
+
+        spriteSourcePos.y = self.size.y * self.direction
+
+        display.blit(self.sprite, playerPosition, pygame.Rect(spriteSourcePos, self.size))
 
         jetpackScale = self.jetpackFuel / constants.PLAYER_JETPACK_MAX
         jetpackOffset = self.size.y * jetpackScale

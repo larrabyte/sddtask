@@ -12,6 +12,7 @@ class Level:
         """Creates an instance of a `Level` object."""
         data = game.resources.fetch_level_data(name)
         self.tilemap = game.resources.get_image("tilemap")
+        self.tilemapTilesPerRow = self.tilemap.get_width() / constants.WORLD_TILE_SIZE
 
         tileResX = int(game.viewportSize[0] + constants.WORLD_TILE_SIZE - 1) & ~(constants.WORLD_TILE_SIZE - 1)
         tileResY = int(game.viewportSize[1] + constants.WORLD_TILE_SIZE - 1) & ~(constants.WORLD_TILE_SIZE - 1)
@@ -104,5 +105,5 @@ class Level:
                 if (tile := layer[self.height - y - offset[1] - 1][x + offset[0]]) > 0:
                     # display.blit(source, destination, area)
                     display.blit(self.tilemap,
-                        (x * constants.WORLD_TILE_SIZE - (viewport[0] % constants.WORLD_TILE_SIZE), resolution[1] - (viewport[1] + (y + 1) * constants.WORLD_TILE_SIZE)),
-                        ((tile - 1) * constants.WORLD_TILE_SIZE, 0, constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE))
+                        (x * constants.WORLD_TILE_SIZE - (viewport[0] % constants.WORLD_TILE_SIZE), resolution[1] - ((y + 1) * constants.WORLD_TILE_SIZE - (viewport[1] % constants.WORLD_TILE_SIZE))),
+                        (((tile - 1) % self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, int((tile - 1) / self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE))

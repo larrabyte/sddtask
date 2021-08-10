@@ -16,12 +16,15 @@ class Game:
         pygame.init()
 
         # Initialise relevant PyGame subsystems.
-        resolution = (1366, 768)
-        flags = pygame.SCALED | pygame.SHOWN | pygame.HWSURFACE | pygame.DOUBLEBUF
-        self.display = pygame.display.set_mode(resolution, flags, vsync=1)
+        self.scaledResolution = (1600, 900)
+        self.renderResolution = (int(self.scaledResolution[0] / constants.SCREEN_SCALE), int(self.scaledResolution[1] / constants.SCREEN_SCALE))
+        flags = pygame.SCALED | pygame.SHOWN | pygame.HWSURFACE
+        self.renderSurface = pygame.Surface(self.renderResolution);
+        self.display = pygame.display.set_mode(self.scaledResolution, flags, vsync=1)
+        self.display.copy()
         self.clock = pygame.time.Clock()
 
-        self.viewportSize = self.display.get_size()
+        self.viewportSize = self.renderSurface.get_size()
         self.viewport = pygame.math.Vector2(0.0, 0.0)
 
         # Internal game subsystems.
@@ -37,9 +40,9 @@ class Game:
 
     def calculate_offset(self, position: pygame.math.Vector2) -> pygame.math.Vector2:
         """Calculates the offset required for `position` to be rendered."""
-        screen = self.display.get_size()
         position.x = position.x - self.viewport[0]
-        position.y = screen[1] - position.y
+        position.y = self.renderResolution[1] - (position.y - self.viewport[1])
+
         return position
 
     def add_entity(self, entity: object) -> None:
@@ -65,12 +68,12 @@ class Game:
 
     def render(self) -> None:
         """Renders all entities and tiles to the screen."""
-        self.display.fill(constants.WORLD_BACKGROUND_COLOUR)
-        self.currentLevel.render(self.display, self.viewport, self.viewportSize)
+        self.currentLevel.render(self.renderSurface, self.viewport, self.viewportSize)
 
         for entity in self.entities:
-            entity.render(self.display)
+            entity.render(self.renderSurface)
 
+        pygame.transform.scale(self.renderSurface, self.scaledResolution, self.display)
         pygame.display.flip()
 
     def run(self) -> None:
