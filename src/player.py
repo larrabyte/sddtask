@@ -14,7 +14,6 @@ class Player:
         self.size = pygame.math.Vector2(constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE * 2)
         self.sprite = game.resources.get_image("max")
         self.game = game
-        self.grounded = False
 
         self.position = pygame.math.Vector2(64, 512)
         self.velocity = pygame.math.Vector2(0.0, 0.0)
@@ -22,7 +21,15 @@ class Player:
 
         # Player game attributes.
         self.jetpackFuel = constants.PLAYER_JETPACK_MAX
+        self.healthPoints = 100
+        self.grounded = False
         self.gunCooldown = 0
+
+    def vibe_check(self, game: "game.Game") -> None:
+        """Performs vibe checks to ensure the player is still alive."""
+        if self.healthPoints <= 0:
+            game.remove_entity(self)
+            game.playerEntity = None
 
     def update_movement(self, game: "game.Game", deltaTime: float) -> None:
         """Updates player movement based on `deltaTime`."""
@@ -112,6 +119,7 @@ class Player:
         """Updates the player's internal state."""
         self.update_movement(game, deltaTime)
         self.update_gun_state(game)
+        self.vibe_check(game)
 
     def render(self, display: pygame.Surface) -> None:
         """Renders the player sprite to the screen."""

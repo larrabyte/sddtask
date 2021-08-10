@@ -25,7 +25,7 @@ class Turret:
 
     def tick(self, game: "game.Game", deltaTime: float) -> None:
         """Updates the turret's internal state."""
-        if self.shooterTimer <= 0:
+        if self.shooterTimer <= 0 and game.playerEntity is not None:
             self.shooterTimer = self.reset_timer()
             position = pygame.math.Vector2(self.position.x, self.position.y)
             velocity = game.playerEntity.position - position

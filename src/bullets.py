@@ -1,4 +1,5 @@
 import constants
+import random
 import game
 
 import pygame.math
@@ -33,6 +34,16 @@ class Bullet:
 
         if not (boundedX and boundedY) or any(collision):
             game.remove_entity(self)
+
+        if (playerRef := game.playerEntity) is not None:
+            playerRef = game.playerEntity
+            playerHorizontal = playerRef.position.x <= self.position.x <= playerRef.position.x + playerRef.size.x
+            playerVertical = playerRef.position.y <= self.position.y <= playerRef.position.y + playerRef.size.y
+
+            if playerHorizontal and playerVertical:
+                # We hit the player, deal damage!
+                playerRef.healthPoints -= random.randint(10, 20)
+                game.remove_entity(self)
 
         self.velocity.y += constants.WORLD_GRAVITY * deltaTime
         self.position += self.velocity * deltaTime
