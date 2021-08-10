@@ -1,6 +1,7 @@
 import collections
 import resources
 import constants
+import player
 import inputs
 import level
 
@@ -34,8 +35,9 @@ class Game:
 
         # Internal game variables.
         self.levels = collections.deque()
-        self.currentLevel = None
         self.entities = set()
+        self.currentLevel = None
+        self.playerEntity = None
         self.running = True
 
     def calculate_offset(self, position: pygame.math.Vector2) -> pygame.math.Vector2:
@@ -47,6 +49,9 @@ class Game:
 
     def add_entity(self, entity: object) -> None:
         """Adds an entity to the internal entity tracking system."""
+        if isinstance(entity, player.Player):
+            self.playerEntity = entity
+
         self.entities.add(entity)
 
     def remove_entity(self, entity: object) -> None:

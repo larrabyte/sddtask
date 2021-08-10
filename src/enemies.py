@@ -1,4 +1,6 @@
 import constants
+import bullets
+import random
 import game
 
 import pygame.transform
@@ -14,9 +16,23 @@ class Turret:
         self.position = position
         self.game = game
 
+        # Internal turret variables.
+        self.shooterTimer = self.reset_timer()
+
+    def reset_timer(self) -> int:
+        """Returns a random number for the turret's shooting delay."""
+        return random.randint(40, 75)
+
     def tick(self, game: "game.Game", deltaTime: float) -> None:
         """Updates the turret's internal state."""
-        pass
+        if self.shooterTimer <= 0:
+            self.shooterTimer = self.reset_timer()
+            position = pygame.math.Vector2(self.position.x, self.position.y)
+            velocity = game.playerEntity.position - position
+            bullet = bullets.Bullet(game, position, velocity)
+            game.add_entity(bullet)
+        else:
+            self.shooterTimer -= 1
 
     def render(self, display: pygame.Surface) -> None:
         """Renders this turret to the screen."""

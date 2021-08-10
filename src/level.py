@@ -40,7 +40,6 @@ class Level:
 
                         if identifier == 225:
                             tileY = self.height - y - 1
-                            print(f"Spawning turret at {x}, {tileY}!")
                             position = pygame.math.Vector2(x * constants.WORLD_TILE_SIZE, tileY * constants.WORLD_TILE_SIZE)
                             enemy = enemies.Turret(game, position)
                             game.add_entity(enemy)
