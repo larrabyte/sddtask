@@ -22,7 +22,6 @@ class Game:
         flags = pygame.SCALED | pygame.SHOWN | pygame.HWSURFACE
         self.renderSurface = pygame.Surface(self.renderResolution);
         self.display = pygame.display.set_mode(self.scaledResolution, flags, vsync=1)
-        self.display.copy()
         self.clock = pygame.time.Clock()
 
         self.viewportSize = self.renderSurface.get_size()

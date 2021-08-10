@@ -106,7 +106,7 @@ class Player:
             self.gunCooldown -= 1
 
         if game.mouse.pressed(1) and self.gunCooldown <= 0:
-            position = self.position.x + self.size.x + 1 if self.velocity.x > 0 else self.position.x
+            position = self.position.x + self.size.x + 1 if self.velocity.x > 0 else self.position.x - 1
             velocity = self.velocity.x + 1250 if self.velocity.x > 0 else -self.velocity.x - 1250
 
             spawn = pygame.math.Vector2(position, self.position.y + (self.size.y / 2))
