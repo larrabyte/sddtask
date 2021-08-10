@@ -33,11 +33,16 @@ class Player:
 
     def update_movement(self, game: "game.Game", deltaTime: float) -> None:
         """Updates player movement based on `deltaTime`."""
+
+        # 1x normally, 2x when shift held down
+        self.isRunning = game.keyboard.pressed(pygame.locals.K_LSHIFT)
+        runSpeed = constants.PLAYER_MOVEMENT_SPEED * (self.isRunning + 1)
+
         if game.keyboard.pressed(pygame.locals.K_a):
-            self.velocity.x -= constants.PLAYER_MOVEMENT_SPEED
+            self.velocity.x -= runSpeed
             self.direction = 1
         if game.keyboard.pressed(pygame.locals.K_d):
-            self.velocity.x += constants.PLAYER_MOVEMENT_SPEED
+            self.velocity.x += runSpeed
             self.direction = 0
 
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
@@ -94,9 +99,6 @@ class Player:
             self.position.x = 0
 
         # Update the player and game state accordingly.
-        game.viewport.x = max(0, self.position.x - game.viewportSize[0] / 2)
-        game.viewport.y = max(0, self.position.y - game.viewportSize[1] / 2)
-
         self.position += self.velocity * deltaTime
         self.velocity.x *= constants.PLAYER_FRICTION_COEFFICIENT
 
@@ -123,6 +125,15 @@ class Player:
 
     def render(self, display: pygame.Surface) -> None:
         """Renders the player sprite to the screen."""
+
+        # Move the viewport when the player hits the first or last third of the screen
+        if self.position.x - self.game.viewport[0] <= self.game.renderResolution[0] / 3:
+            self.game.viewport.x = max(0, self.position.x - self.game.viewportSize[0] / 3)
+        elif self.position.x - self.game.viewport[0] >= self.game.renderResolution[0] / 3 * 2:
+            self.game.viewport.x = max(0, self.position.x - self.game.viewportSize[0] / 3 * 2)
+
+        self.game.viewport.y = max(0, self.position.y - self.game.viewportSize[1] / 2)
+
         playerPosition = pygame.Vector2(self.position.x, self.position.y + self.size.y)
         playerPosition = self.game.calculate_offset(playerPosition)
 
@@ -130,7 +141,10 @@ class Player:
         spriteSourcePos = pygame.Vector2(0, 0);
         if self.grounded: # Walking animation
             if abs(self.velocity.x) >= constants.PLAYER_MOVEMENT_SPEED: # Check if player is moving
-                spriteSourcePos.x = int(((timeSinceStart % 1000) / 250)) * constants.WORLD_TILE_SIZE
+                if self.isRunning: # Faster animations when running
+                    spriteSourcePos.x = int(((timeSinceStart % 500) / 125)) * constants.WORLD_TILE_SIZE
+                else:
+                    spriteSourcePos.x = int(((timeSinceStart % 1000) / 250)) * constants.WORLD_TILE_SIZE
 
         spriteSourcePos.y = self.size.y * self.direction
 
