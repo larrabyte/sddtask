@@ -99,8 +99,11 @@ class Player:
             self.gunCooldown -= 1
 
         if game.mouse.pressed(1) and self.gunCooldown <= 0:
-            spawn = pygame.math.Vector2(self.position.x + self.size.x + 1, self.position.y + (self.size.y / 2))
-            velocity = pygame.math.Vector2(self.velocity.x + 1250, 0)
+            position = self.position.x + self.size.x + 1 if self.velocity.x > 0 else self.position.x
+            velocity = self.velocity.x + 1250 if self.velocity.x > 0 else -self.velocity.x - 1250
+
+            spawn = pygame.math.Vector2(position, self.position.y + (self.size.y / 2))
+            velocity = pygame.math.Vector2(velocity, 0)
             bullet = bullets.Bullet(game, spawn, velocity)
             game.add_entity(bullet)
             self.gunCooldown = 20

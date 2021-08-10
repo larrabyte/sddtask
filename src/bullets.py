@@ -10,6 +10,11 @@ class Bullet:
         surface = game.resources.get_image("bullet")
         self.size = pygame.math.Vector2(16, 16)
         self.sprite = pygame.transform.scale(surface, (int(self.size.x), int(self.size.y)))
+
+        if velocity.x < 0:
+            # The bullet has to face left if it's travelling left, so we flip the sprite.
+            self.sprite = pygame.transform.flip(self.sprite, True, False)
+
         self.game = game
 
         self.position = position
