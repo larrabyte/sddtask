@@ -18,10 +18,12 @@ class Game:
 
         # Initialise relevant PyGame subsystems.
         self.scaledResolution = (1600, 900)
+        flags = pygame.SHOWN | pygame.HWSURFACE
+        #self.display = pygame.display.set_mode(self.scaledResolution, flags, vsync=1)
+        self.display = pygame.display.set_mode(self.scaledResolution, flags | pygame.FULLSCREEN)
+        self.scaledResolution = self.display.get_size()
         self.renderResolution = (int(self.scaledResolution[0] / constants.SCREEN_SCALE), int(self.scaledResolution[1] / constants.SCREEN_SCALE))
-        flags = pygame.SCALED | pygame.SHOWN | pygame.HWSURFACE
-        self.renderSurface = pygame.Surface(self.renderResolution);
-        self.display = pygame.display.set_mode(self.scaledResolution, flags, vsync=1)
+        self.renderSurface = pygame.Surface(self.renderResolution)
         self.clock = pygame.time.Clock()
 
         self.viewportSize = self.renderSurface.get_size()
