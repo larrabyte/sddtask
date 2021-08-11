@@ -45,7 +45,7 @@ class Bullet:
                 playerRef.healthPoints -= random.randint(10, 20)
                 game.remove_entity(self)
 
-        self.velocity.y += constants.WORLD_GRAVITY * deltaTime
+        self.velocity.y += (constants.WORLD_GRAVITY / 2) * deltaTime
         self.position += self.velocity * deltaTime
 
     def render(self, display: pygame.Surface) -> None:

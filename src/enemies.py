@@ -7,11 +7,12 @@ import pygame.transform
 import pygame.math
 import pygame
 
-class Turret:
-    def __init__(self, game: "game.Game", position: pygame.math.Vector2) -> None:
-        """Instantiates an instance of the `Turret` class."""
-        sprite = game.resources.get_image("turret")
-        self.size = pygame.math.Vector2(constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE)
+class Enemy:
+    def __init__(self, game: "game.Game", position: pygame.math.Vector2, type: int) -> None:
+        """Instantiates an instance of the `Enemy` class."""
+        print(f"Creating soldier{type}!");
+        sprite = game.resources.get_image(f"soldier{type}")
+        self.size = pygame.math.Vector2(constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE * 2)
         self.sprite = pygame.transform.scale(sprite, (int(self.size.x), int(self.size.y)))
         self.position = position
         self.game = game
@@ -28,7 +29,8 @@ class Turret:
         if self.shooterTimer <= 0 and game.playerEntity is not None:
             self.shooterTimer = self.reset_timer()
             position = pygame.math.Vector2(self.position.x, self.position.y)
-            velocity = game.playerEntity.position - position
+            velocity = (game.playerEntity.position + pygame.Vector2(game.playerEntity.size.x / 2, game.playerEntity.size.y / 2)) - position
+            velocity *= constants.PROJECTILE_SPEED
             bullet = bullets.Bullet(game, position, velocity)
             game.add_entity(bullet)
         else:

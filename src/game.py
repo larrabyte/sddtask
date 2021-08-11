@@ -88,3 +88,10 @@ class Game:
             self.render()
             deltaTime = self.clock.tick(0) / 1000.0
             self.tick(deltaTime)
+
+            if self.playerEntity == None: # Game over
+                self.display.fill((255, 0, 0))
+                pygame.display.flip()
+
+                pygame.time.delay(2000)
+                self.running = False

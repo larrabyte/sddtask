@@ -21,7 +21,7 @@ class Level:
         self.width = data["width"]
         self.height = data["height"]
         self.foregroundLayer = None
-        self.backgroundLayers = []
+        self.layers = []
 
         for layer in data["layers"]:
             # OK, so basically: nested list comprehensions are cool. We iterate over the tile
@@ -32,20 +32,21 @@ class Level:
                 if self.foregroundLayer is None:
                     self.foregroundLayer = current
 
-            elif layer["name"] == "enemies":
+            if layer["name"] == "enemies":
                 # If this layer contains enemy spawn points, add them as entities.
                 for y in range(self.height):
                     for x in range(self.width):
-                        identifier = current[y][x]
+                        # Enemy tiles start at 257
+                        identifier = current[y][x] - 256
 
-                        if identifier == 225:
+                        if identifier > 0 and identifier <= 3:
                             tileY = self.height - y - 1
                             position = pygame.math.Vector2(x * constants.WORLD_TILE_SIZE, tileY * constants.WORLD_TILE_SIZE)
-                            enemy = enemies.Turret(game, position)
+                            enemy = enemies.Enemy(game, position, identifier)
                             game.add_entity(enemy)
 
             else:
-                self.backgroundLayers.append(current)
+                self.layers.append(current)
 
     def get_foreground_tile(self, x: float, y: float) -> int:
         """Returns the foreground tile at world coordinates (x, y)."""
@@ -88,12 +89,9 @@ class Level:
         offsetX = int(viewport.x) >> (constants.WORLD_TILE_SHIFT)
         offsetY = int(viewport.y) >> (constants.WORLD_TILE_SHIFT)
 
-        for layer in self.backgroundLayers:
-            # Render each background layer by iterating through the list of background layers.
+        for layer in self.layers:
+            # Render each layer by iterating through the list of layers.
             self.render_layer(display, viewport, resolution, (offsetX, offsetY), layer)
-
-        # Render the foreground layer last.
-        self.render_layer(display, viewport, resolution, (offsetX, offsetY), self.foregroundLayer)
 
     def render_layer(self, display: pygame.Surface, viewport: pygame.math.Vector2, resolution: t.Tuple[int, int], offset: t.Tuple[int, int], layer: list) -> None:
         """Renders a specific layer given a display and viewport information."""
