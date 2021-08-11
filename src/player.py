@@ -102,23 +102,21 @@ class Player:
         self.position += self.velocity * deltaTime
         self.velocity.x *= constants.PLAYER_FRICTION_COEFFICIENT
 
-    def check_enemy_collision(self, game: "game.Game") -> None:
-        if self.grounded and self.velocity.y < 0:
-            return # The player is supposed to kill enemies by jumping.
-
+    def check_enemy_collision(self, game: "game.Game", deltaTime: float) -> None:
         rect = pygame.Rect(self.position, self.size)
         for entity in game.entities:
             if isinstance(entity, Enemy):
-                if rect.colliderect(entity.position, entity.size):
+                if rect.colliderect(entity.position + pygame.Vector2(0, entity.size.y - 16), (entity.size.x, 16)): # Check for collision with enemy's head.
                     game.remove_entity(entity)
                     self.velocity.y = constants.PLAYER_JUMPING_SPEED # Player bounces off entity
+                    self.position.y += constants.PLAYER_JUMPING_SPEED * deltaTime
                     return
 
     def tick(self, game: "game.Game", deltaTime: float) -> None:
         """Updates the player's internal state."""
         self.update_movement(game, deltaTime)
+        self.check_enemy_collision(game, deltaTime)
         self.vibe_check(game)
-        self.check_enemy_collision(game)
 
     def render(self, display: pygame.Surface) -> None:
         """Renders the player sprite to the screen."""
