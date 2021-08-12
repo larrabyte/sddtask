@@ -6,6 +6,7 @@ import inputs
 import level
 
 import pygame.display
+import pygame.locals
 import pygame.event
 import pygame.mixer
 import pygame.time
@@ -36,7 +37,6 @@ class Game:
         # Internal game variables.
         self.healthBar = self.resources.get_image("health")
         self.fuelBar = self.resources.get_image("fuel")
-        self.levels = collections.deque()
         self.entities = set()
         self.currentLevel = None
         self.playerEntity = None
@@ -61,10 +61,6 @@ class Game:
         """Removes an entity from the internal entity tracking system."""
         self.entities.remove(entity)
 
-    def add_level(self, level: "level.Level") -> None:
-        """Adds a level to the game."""
-        self.levels.append(level)
-
     def tick(self, deltaTime: float) -> None:
         """Updates the game's internal state."""
         for event in pygame.event.get():
@@ -81,18 +77,34 @@ class Game:
         for entity in self.entities:
             entity.render(self.renderSurface)
 
-        if self.playerEntity and self.playerEntity.healthPoints > 0:
+        if self.playerEntity is not None and self.playerEntity.healthPoints > 0:
             self.renderSurface.blit(pygame.transform.scale(self.healthBar, (int(100 * (self.playerEntity.healthPoints / constants.PLAYER_HEALTH_MAX)), 16)), (1, self.renderResolution[1] - 34))
             self.renderSurface.blit(pygame.transform.scale(self.fuelBar, (int(100 * (self.playerEntity.jetpackFuel / constants.PLAYER_JETPACK_MAX)), 16)),  (1, self.renderResolution[1] - 17))
 
         pygame.transform.scale(self.renderSurface, self.scaledResolution, self.display)
         pygame.display.flip()
 
-    def run(self) -> None:
+    def postgame(self) -> bool:
+        """Post game loop."""
+        while True: # Now we listen for keystrokes.
+            if self.keyboard.pressed(pygame.locals.K_r):
+                return True
+            if self.keyboard.pressed(pygame.locals.K_ESCAPE):
+                return False
+
+            for event in pygame.event.get():
+                pass
+
+            self.clock.tick(30)
+
+    def run(self) -> bool:
         """Starts the game loop. This function does not return."""
-        self.currentLevel = self.levels.popleft()
         pygame.mixer.music.load("audio/music.wav")
         pygame.mixer.music.play(-1)
+
+        self.viewportSize = self.renderSurface.get_size()
+        self.viewport = pygame.math.Vector2(0.0, 0.0)
+        self.running = True
 
         while self.running:
             self.render()
@@ -105,10 +117,10 @@ class Game:
             self.display.blit(pygame.transform.scale(gameOver, self.scaledResolution), (0, 0))
             pygame.mixer.music.stop()
             pygame.display.flip()
-            pygame.time.delay(1500)
+            return self.postgame()
         elif self.gameResult == 1:
             # 1 means game was won (player reached the flag).
             green = (0, 255, 0)
             self.display.fill(green)
             pygame.display.flip()
-            pygame.time.delay(1500)
+            return self.postgame()
