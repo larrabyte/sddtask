@@ -17,10 +17,8 @@ class Game:
         pygame.init()
 
         # Initialise relevant PyGame subsystems.
-        self.scaledResolution = (1600, 900)
         flags = pygame.SHOWN | pygame.HWSURFACE
-        #self.display = pygame.display.set_mode(self.scaledResolution, flags, vsync=1)
-        self.display = pygame.display.set_mode(self.scaledResolution, flags | pygame.FULLSCREEN)
+        self.display = pygame.display.set_mode((0, 0), flags | pygame.FULLSCREEN)
         self.scaledResolution = self.display.get_size()
         self.renderResolution = (int(self.scaledResolution[0] / constants.SCREEN_SCALE), int(self.scaledResolution[1] / constants.SCREEN_SCALE))
         self.renderSurface = pygame.Surface(self.renderResolution)
@@ -43,6 +41,9 @@ class Game:
 
         pygame.mixer.music.load('audio/music.wav')
         pygame.mixer.music.play(-1)
+
+        self.healthBar = self.resources.get_image("health")
+        self.fuelBar = self.resources.get_image("fuel")
 
     def calculate_offset(self, position: pygame.math.Vector2) -> pygame.math.Vector2:
         """Calculates the offset required for `position` to be rendered."""
@@ -81,6 +82,10 @@ class Game:
 
         for entity in self.entities:
             entity.render(self.renderSurface)
+        
+        if self.playerEntity and self.playerEntity.healthPoints > 0:
+            self.renderSurface.blit(pygame.transform.scale(self.healthBar, (int(100 * (self.playerEntity.healthPoints / constants.PLAYER_HEALTH_MAX)), 16)), (1, self.renderResolution[1] - 34))
+            self.renderSurface.blit(pygame.transform.scale(self.fuelBar, (int(100 * (self.playerEntity.jetpackFuel / constants.PLAYER_JETPACK_MAX)), 16)),  (1, self.renderResolution[1] - 17))
 
         pygame.transform.scale(self.renderSurface, self.scaledResolution, self.display)
         pygame.display.flip()

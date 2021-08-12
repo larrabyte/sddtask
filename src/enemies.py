@@ -10,7 +10,6 @@ import pygame
 class Enemy:
     def __init__(self, game: "game.Game", position: pygame.math.Vector2, type: int) -> None:
         """Instantiates an instance of the `Enemy` class."""
-        print(f"Creating soldier{type}!");
         sprite = game.resources.get_image(f"soldier{type}")
         self.size = pygame.math.Vector2(constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE * 2)
         self.sprite = pygame.transform.scale(sprite, (int(self.size.x), int(self.size.y)))

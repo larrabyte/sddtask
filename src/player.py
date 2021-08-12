@@ -22,7 +22,7 @@ class Player:
 
         # Player game attributes.
         self.jetpackFuel = constants.PLAYER_JETPACK_MAX
-        self.healthPoints = 100
+        self.healthPoints = constants.PLAYER_HEALTH_MAX
         self.grounded = False
         self.gunCooldown = 0
 
@@ -32,7 +32,7 @@ class Player:
             game.remove_entity(self)
             game.playerEntity = None
 
-        if self.position.y + self.size.y < 0: # The player has fallen off the world.
+        if self.position.y + self.size.y < -512: # The player has fallen off the world.
             game.remove_entity(self)
             game.playerEntity = None
 
@@ -153,10 +153,3 @@ class Player:
         spriteSourcePos.y = self.size.y * self.direction
 
         display.blit(self.sprite, playerPosition, pygame.Rect(spriteSourcePos, self.size))
-
-        jetpackScale = self.jetpackFuel / constants.PLAYER_JETPACK_MAX
-        jetpackOffset = self.size.y * jetpackScale
-        jetpackPosition = pygame.Vector2(self.position.x + self.size.x + 1, self.position.y + jetpackOffset)
-        jetpackPosition = self.game.calculate_offset(jetpackPosition)
-        jetpackRect = pygame.Rect(jetpackPosition.x, jetpackPosition.y, 3, jetpackOffset)
-        pygame.draw.rect(display, (255, 0, 0), jetpackRect)
