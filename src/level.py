@@ -14,9 +14,10 @@ class Level:
         self.tilemap = game.resources.get_image("tilemap")
         self.tilemapTilesPerRow = self.tilemap.get_width() / constants.WORLD_TILE_SIZE
 
-        tileResX = int(game.viewportSize[0] + constants.WORLD_TILE_SIZE - 1) & ~(constants.WORLD_TILE_SIZE - 1)
-        tileResY = int(game.viewportSize[1] + constants.WORLD_TILE_SIZE - 1) & ~(constants.WORLD_TILE_SIZE - 1)
+        tileResX = int(game.viewportSize[0] + constants.WORLD_TILE_SIZE * 2 - 1) >> constants.WORLD_TILE_SHIFT
+        tileResY = int(game.viewportSize[1] + constants.WORLD_TILE_SIZE * 2 - 1) >> constants.WORLD_TILE_SHIFT
         self.viewportSizeTiles = (tileResX, tileResY)
+        print(f"viewport size tiles x: {tileResX}")
 
         self.width = data["width"]
         self.height = data["height"]
@@ -94,13 +95,18 @@ class Level:
             self.render_layer(display, viewport, resolution, (offsetX, offsetY), layer)
 
     def render_layer(self, display: pygame.Surface, viewport: pygame.math.Vector2, resolution: t.Tuple[int, int], offset: t.Tuple[int, int], layer: list) -> None:
+        # Unaligned portion of viewprot
+        viewportUnalignedX = (viewport[0] % constants.WORLD_TILE_SIZE)
+        viewportUnalignedY = (viewport[1] % constants.WORLD_TILE_SIZE)
+
         """Renders a specific layer given a display and viewport information."""
         for y in range(min(self.viewportSizeTiles[1], self.height - offset[1])):
             # When y = 0, we are at the bottom of the level.
             for x in range(min(self.viewportSizeTiles[0], self.width - offset[0])):
+                yRenderOffset = resolution[1] - ((y + 1) * constants.WORLD_TILE_SIZE - viewportUnalignedY)
                 # Ensure we are within both the tilemap and screen bounds.
                 if (tile := layer[self.height - y - offset[1] - 1][x + offset[0]]) > 0:
                     # display.blit(source, destination, area)
                     display.blit(self.tilemap,
-                        (x * constants.WORLD_TILE_SIZE - (viewport[0] % constants.WORLD_TILE_SIZE), resolution[1] - ((y + 1) * constants.WORLD_TILE_SIZE - (viewport[1] % constants.WORLD_TILE_SIZE))),
+                        (x * constants.WORLD_TILE_SIZE - viewportUnalignedX, yRenderOffset),
                         (((tile - 1) % self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, int((tile - 1) / self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE))
