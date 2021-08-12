@@ -41,6 +41,9 @@ class Game:
         self.playerEntity = None
         self.running = True
 
+        pygame.mixer.music.load('audio/music.wav')
+        pygame.mixer.music.play(-1)
+
     def calculate_offset(self, position: pygame.math.Vector2) -> pygame.math.Vector2:
         """Calculates the offset required for `position` to be rendered."""
         position.x = position.x - self.viewport[0]
@@ -92,8 +95,10 @@ class Game:
             self.tick(deltaTime)
 
             if self.playerEntity == None: # Game over
-                self.display.fill((255, 0, 0))
-                pygame.display.flip()
-
-                pygame.time.delay(2000)
                 self.running = False
+
+        if self.playerEntity == None: # Game over
+            self.display.fill((255, 0, 0))
+            pygame.display.flip()
+
+            pygame.time.delay(2000)
