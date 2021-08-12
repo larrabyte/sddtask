@@ -120,7 +120,7 @@ class Game:
             return self.postgame()
         elif self.gameResult == 1:
             # 1 means game was won (player reached the flag).
-            gameOver = self.resources.get_image("gameover")
+            gameOver = self.resources.get_image("gamewon")
             self.display.blit(pygame.transform.scale(gameOver, self.scaledResolution), (0, 0))
             pygame.mixer.music.stop()
             pygame.display.flip()
