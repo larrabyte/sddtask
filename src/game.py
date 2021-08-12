@@ -34,17 +34,14 @@ class Game:
         self.resources = resources.Resources()
 
         # Internal game variables.
+        self.healthBar = self.resources.get_image("health")
+        self.fuelBar = self.resources.get_image("fuel")
         self.levels = collections.deque()
         self.entities = set()
         self.currentLevel = None
         self.playerEntity = None
+        self.gameResult = 0
         self.running = True
-
-        pygame.mixer.music.load('audio/music.wav')
-        pygame.mixer.music.play(-1)
-
-        self.healthBar = self.resources.get_image("health")
-        self.fuelBar = self.resources.get_image("fuel")
 
     def calculate_offset(self, position: pygame.math.Vector2) -> pygame.math.Vector2:
         """Calculates the offset required for `position` to be rendered."""
@@ -94,18 +91,23 @@ class Game:
     def run(self) -> None:
         """Starts the game loop. This function does not return."""
         self.currentLevel = self.levels.popleft()
+        pygame.mixer.music.load("audio/music.wav")
+        pygame.mixer.music.play(-1)
 
         while self.running:
             self.render()
             deltaTime = self.clock.tick(0) / 1000.0
             self.tick(deltaTime)
 
-            if self.playerEntity is None:
-                # It's game over: the game should not be running now.
-                self.running = False
-
-        if self.playerEntity is None:
+        if self.gameResult == -1:
+            # -1 means the game is lost (player died).
             blood = (255, 0, 0)
             self.display.fill(blood)
+            pygame.display.flip()
+            pygame.time.delay(1500)
+        elif self.gameResult == 1:
+            # 1 means game was won (player reached the flag).
+            green = (0, 255, 0)
+            self.display.fill(green)
             pygame.display.flip()
             pygame.time.delay(1500)

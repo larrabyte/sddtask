@@ -26,13 +26,12 @@ class Player:
 
     def vibe_check(self, game: "game.Game") -> None:
         """Performs vibe checks to ensure the player is still alive."""
-        if self.healthPoints <= 0:
+        if self.healthPoints <= 0 or self.position.y + self.size.y < -512:
+            # The player is either dead or under the world.
             game.remove_entity(self)
             game.playerEntity = None
-
-        if self.position.y + self.size.y < -512: # The player has fallen off the world.
-            game.remove_entity(self)
-            game.playerEntity = None
+            game.gameResult = -1
+            game.running = False
 
     def update_movement(self, game: "game.Game", deltaTime: float) -> None:
         """Updates player movement based on `deltaTime`."""
@@ -42,14 +41,14 @@ class Player:
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
         b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
         collision = game.currentLevel.collision_check(a, b)
-        self.grounded = collision[3]
+        self.grounded = collision[3][0]
 
-        if collision[2]:
+        if collision[2][0]:
             # Top-side collision: snap to the lower bound of the collided tile.
             snapY = int(self.position.y + self.size.y) & ~(constants.WORLD_TILE_SIZE - 1)
             self.position.y = snapY - self.size.y - 1
             self.velocity.y = 0
-        elif collision[3]:
+        elif collision[3][0]:
             if game.keyboard.pressed(pygame.locals.K_SPACE):
                 # Player is grounded and key pressed: apply jumping force.
                 self.velocity.y = constants.PLAYER_JUMPING_SPEED
@@ -80,28 +79,34 @@ class Player:
         b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
         collision = game.currentLevel.collision_check(a, b)
 
-        if collision[0]:
+        if collision[0][0]:
             # Left-side collision: snap to the right side of the collided tile.
             snapX = int(self.position.x) & ~(constants.WORLD_TILE_SIZE - 1)
             self.position.x = snapX + self.size.x + 1
             self.velocity.x = 0
 
-        if collision[1]:
+        if collision[1][0]:
             # Right-side collision: snap to the left side of the collided tile.
             snapX = int(self.position.x + self.size.x) & ~(constants.WORLD_TILE_SIZE - 1)
             self.position.x = snapX - self.size.x - 1
             self.velocity.x = 0
 
+        if any(x[1] == 256 for x in collision):
+            # The player has hit the flag: win screen!
+            game.remove_entity(self)
+            game.playerEntity = None
+            game.gameResult = 1
+            game.running = False
+            return
+
         if self.position.x < 0:
-            # Ensure the player can't go off screen to the left.
             self.position.x = 0
+        if self.position.y > game.currentLevel.height * constants.WORLD_TILE_SIZE:
+            self.position.y = game.currentLevel.height * constants.WORLD_TILE_SIZE
 
         # Update the player and game state accordingly.
         self.position += self.velocity * deltaTime
         self.velocity.x *= constants.PLAYER_FRICTION_COEFFICIENT
-
-        if self.position.y > game.currentLevel.height * constants.WORLD_TILE_SIZE: # Ensure the player does not exceed the world height.
-            self.position.y = game.currentLevel.height * constants.WORLD_TILE_SIZE
 
     def check_enemy_collision(self, game: "game.Game", deltaTime: float) -> None:
         """Check for enemy collisions using the player's position."""
