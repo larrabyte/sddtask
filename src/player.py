@@ -65,7 +65,7 @@ class Player:
         if game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel > 0:
             # If the player is holding space and jetpack fuel is available, update as needed.
             self.velocity.y += constants.PLAYER_JETPACK_SPEED * deltaTime
-            self.jetpackFuel -= 45 * deltaTime
+            self.jetpackFuel -= 50 * deltaTime
         elif self.grounded and self.jetpackFuel < constants.PLAYER_JETPACK_MAX:
             # If space isn't being held and jetpack fuel isn't maxed out, add.
             self.jetpackFuel += 30 * deltaTime
@@ -100,8 +100,8 @@ class Player:
         self.position += self.velocity * deltaTime
         self.velocity.x *= constants.PLAYER_FRICTION_COEFFICIENT
 
-        if self.position.y + self.size.y > game.currentLevel.height * constants.WORLD_TILE_SIZE: # Ensure the player does not exceed the world height.
-            self.position.y = game.currentLevel.height - self.size.y
+        if self.position.y > game.currentLevel.height * constants.WORLD_TILE_SIZE: # Ensure the player does not exceed the world height.
+            self.position.y = game.currentLevel.height * constants.WORLD_TILE_SIZE
 
     def check_enemy_collision(self, game: "game.Game", deltaTime: float) -> None:
         """Check for enemy collisions using the player's position."""
@@ -116,6 +116,7 @@ class Player:
                 if self.position.y > entity.position.y + entity.size.y - 20 and rect.colliderect(enemyCollision):
                     self.velocity.y = constants.PLAYER_JUMPING_SPEED
                     game.remove_entity(entity)
+                    break
 
     def tick(self, game: "game.Game", deltaTime: float) -> None:
         """Updates the player's internal state."""
