@@ -17,7 +17,6 @@ class Level:
         tileResX = int(game.viewportSize[0] + constants.WORLD_TILE_SIZE * 2 - 1) >> constants.WORLD_TILE_SHIFT
         tileResY = int(game.viewportSize[1] + constants.WORLD_TILE_SIZE * 2 - 1) >> constants.WORLD_TILE_SHIFT
         self.viewportSizeTiles = (tileResX, tileResY)
-        print(f"viewport size tiles x: {tileResX}")
 
         self.width = data["width"]
         self.height = data["height"]
@@ -37,10 +36,8 @@ class Level:
                 # If this layer contains enemy spawn points, add them as entities.
                 for y in range(self.height):
                     for x in range(self.width):
-                        # Enemy tiles start at 257
-                        identifier = current[y][x] - 256
-
-                        if identifier > 0 and identifier <= 3:
+                        if (identifier := current[y][x] - 256) > 0 and identifier <= 3:
+                            # Enemy tiles start at 257.
                             tileY = self.height - y - 1
                             position = pygame.math.Vector2(x * constants.WORLD_TILE_SIZE, tileY * constants.WORLD_TILE_SIZE)
                             enemy = enemies.Enemy(game, position, identifier)
@@ -60,7 +57,7 @@ class Level:
 
         return 0
 
-    def collision_check(self, a: pygame.math.Vector2, b: pygame.math.Vector2) -> t.List[bool]:
+    def collision_check(self, a: pygame.math.Vector2, b: pygame.math.Vector2) -> t.Tuple[bool]:
         """Returns whether any physical tiles are adjacent to the given world coordinates."""
         leftTop = self.get_foreground_tile(a.x, b.y + 4)
         leftMiddle = self.get_foreground_tile(a.x, (a.y + b.y) / 2)
@@ -82,7 +79,7 @@ class Level:
         bottomRight = self.get_foreground_tile(b.x - 4, b.y)
         bottom = bottomLeft + bottomMiddle + bottomRight
 
-        return [left > 0, right > 0, top > 0, bottom > 0]
+        return (left > 0, right > 0, top > 0, bottom > 0)
 
     def render(self, display: pygame.Surface, viewport: pygame.math.Vector2, resolution: t.Tuple[int, int]) -> None:
         """Renders each layer to the display."""
@@ -95,18 +92,16 @@ class Level:
             self.render_layer(display, viewport, resolution, (offsetX, offsetY), layer)
 
     def render_layer(self, display: pygame.Surface, viewport: pygame.math.Vector2, resolution: t.Tuple[int, int], offset: t.Tuple[int, int], layer: list) -> None:
-        # Unaligned portion of viewprot
+        """Renders a specific layer given a display and viewport information."""
         viewportUnalignedX = (viewport[0] % constants.WORLD_TILE_SIZE)
         viewportUnalignedY = (viewport[1] % constants.WORLD_TILE_SIZE)
 
-        """Renders a specific layer given a display and viewport information."""
+        # When y = 0, we are at the bottom of the level.
         for y in range(min(self.viewportSizeTiles[1], self.height - offset[1])):
-            # When y = 0, we are at the bottom of the level.
             for x in range(min(self.viewportSizeTiles[0], self.width - offset[0])):
                 yRenderOffset = resolution[1] - ((y + 1) * constants.WORLD_TILE_SIZE - viewportUnalignedY)
-                # Ensure we are within both the tilemap and screen bounds.
+
                 if (tile := layer[self.height - y - offset[1] - 1][x + offset[0]]) > 0:
-                    # display.blit(source, destination, area)
-                    display.blit(self.tilemap,
-                        (x * constants.WORLD_TILE_SIZE - viewportUnalignedX, yRenderOffset),
-                        (((tile - 1) % self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, int((tile - 1) / self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE))
+                    destination = (x * constants.WORLD_TILE_SIZE - viewportUnalignedX, yRenderOffset)
+                    area = (((tile - 1) % self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, int((tile - 1) / self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE)
+                    display.blit(self.tilemap, destination, area)
