@@ -91,7 +91,7 @@ class Player:
             self.position.x = snapX - self.size.x - 1
             self.velocity.x = 0
 
-        if any(x[1] == 256 for x in collision):
+        if any(256 in x[1] for x in collision):
             # The player has hit the flag: win screen!
             game.remove_entity(self)
             game.playerEntity = None

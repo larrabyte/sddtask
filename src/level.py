@@ -57,27 +57,27 @@ class Level:
 
         return 0
 
-    def collision_check(self, a: pygame.math.Vector2, b: pygame.math.Vector2) -> t.Tuple[t.Tuple[bool, int]]:
+    def collision_check(self, a: pygame.math.Vector2, b: pygame.math.Vector2) -> t.Tuple[t.Tuple[bool, t.Tuple[int]]]:
         """Returns the value of any adjacent physical tiles that are adjacent to the physical world coodinates."""
         leftTop = self.get_foreground_tile(a.x, b.y + 4)
         leftMiddle = self.get_foreground_tile(a.x, (a.y + b.y) / 2)
         leftBottom = self.get_foreground_tile(a.x, a.y - 4)
-        left = (leftTop + leftMiddle + leftBottom > 0, leftMiddle)
+        left = (leftTop + leftMiddle + leftBottom > 0, (leftBottom, leftMiddle, leftTop))
 
         rightTop = self.get_foreground_tile(b.x, b.y + 4)
         rightMiddle = self.get_foreground_tile(b.x, (a.y + b.y) / 2)
         rightBottom = self.get_foreground_tile(b.x, a.y - 4)
-        right = (rightTop + rightMiddle + rightBottom > 0, rightMiddle)
+        right = (rightTop + rightMiddle + rightBottom > 0, (rightBottom, rightMiddle, rightTop))
 
         topLeft = self.get_foreground_tile(a.x + 4, a.y)
         topMiddle = self.get_foreground_tile((a.x + b.x) / 2, a.y)
         topRight = self.get_foreground_tile(b.x - 4, a.y)
-        top = (topLeft + topMiddle + topRight > 0, topMiddle)
+        top = (topLeft + topMiddle + topRight > 0, (topLeft, topMiddle, topRight))
 
         bottomLeft = self.get_foreground_tile(a.x + 4, b.y)
         bottomMiddle = self.get_foreground_tile((a.x + b.x) / 2, b.y)
         bottomRight = self.get_foreground_tile(b.x - 4, b.y)
-        bottom = (bottomLeft + bottomMiddle + bottomRight > 0, bottomMiddle)
+        bottom = (bottomLeft + bottomMiddle + bottomRight > 0, (bottomLeft, bottomMiddle, bottomRight))
 
         return (left, right, top, bottom)
 
