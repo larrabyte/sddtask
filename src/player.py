@@ -4,6 +4,7 @@ import game
 
 import pygame.transform
 import pygame.locals
+import pygame.mixer
 import pygame.math
 import pygame.draw
 import pygame
@@ -13,6 +14,7 @@ class Player:
         """Initialises an instance of the `Player` class."""
         self.size = pygame.math.Vector2(constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE * 2)
         self.sprite = game.resources.get_image("max")
+        self.hurt = pygame.mixer.Sound("audio/hurt.wav")
         self.game = game
 
         self.position = pygame.math.Vector2(64, 512)
