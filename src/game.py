@@ -101,8 +101,9 @@ class Game:
 
         if self.gameResult == -1:
             # -1 means the game is lost (player died).
-            blood = (255, 0, 0)
-            self.display.fill(blood)
+            gameOver = self.resources.get_image("gameover")
+            self.display.blit(pygame.transform.scale(gameOver, self.scaledResolution), (0, 0))
+            pygame.mixer.music.stop()
             pygame.display.flip()
             pygame.time.delay(1500)
         elif self.gameResult == 1:

@@ -30,7 +30,7 @@ class Bullet:
             b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
             collision = game.currentLevel.collision_check(a, b)
 
-        if not (boundedX and boundedY) or any(collision):
+        if not (boundedX and boundedY) or any(x[0] for x in collision):
             game.remove_entity(self)
 
         if (playerRef := game.playerEntity) is not None:
