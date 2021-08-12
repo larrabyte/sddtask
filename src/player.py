@@ -1,5 +1,6 @@
 import constants
 from enemies import Enemy
+from bullets import Bullet
 import game
 
 import pygame.transform
@@ -38,16 +39,11 @@ class Player:
         self.isRunning = game.keyboard.pressed(pygame.locals.K_LSHIFT)
         runSpeed = constants.PLAYER_MOVEMENT_SPEED * (self.isRunning + 1)
 
-        if game.keyboard.pressed(pygame.locals.K_a):
-            self.velocity.x -= runSpeed
-            self.direction = 1
-        if game.keyboard.pressed(pygame.locals.K_d):
-            self.velocity.x += runSpeed
-            self.direction = 0
-
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
         b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
         collision = game.currentLevel.collision_check(a, b)
+
+        self.grounded = False
 
         if collision[2]:
             # Top-side collision: snap to the lower bound of the collided tile.
@@ -72,10 +68,17 @@ class Player:
         if game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel > 0:
             # If the player is holding space and jetpack fuel is available, update as needed.
             self.velocity.y += constants.PLAYER_JETPACK_SPEED * deltaTime
-            self.jetpackFuel -= 60 * deltaTime
+            self.jetpackFuel -= 30 * deltaTime
         elif self.grounded and self.jetpackFuel < constants.PLAYER_JETPACK_MAX:
             # If space isn't being held and jetpack fuel isn't maxed out, add.
             self.jetpackFuel += 15 * deltaTime
+
+        if game.keyboard.pressed(pygame.locals.K_a):
+            self.velocity.x -= runSpeed
+            self.direction = 1
+        if game.keyboard.pressed(pygame.locals.K_d):
+            self.velocity.x += runSpeed
+            self.direction = 0
 
         # Recompute collisions now that the player's vertical position has been resolved.
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
@@ -106,7 +109,9 @@ class Player:
         rect = pygame.Rect(self.position, self.size)
         for entity in game.entities:
             if isinstance(entity, Enemy):
-                if rect.colliderect(entity.position + pygame.Vector2(0, entity.size.y - 16), (entity.size.x, 16)): # Check for collision with enemy's head.
+                # Make sure player is above the enemy
+                enemyCollision = pygame.Rect(entity.position + pygame.Vector2(0, entity.size.y - 16), (entity.size.x, 16))
+                if self.position.y > entity.position.y + entity.size.y - 20 and rect.colliderect(enemyCollision): # Check for collision with enemy's head.
                     game.remove_entity(entity)
                     self.velocity.y = constants.PLAYER_JUMPING_SPEED # Player bounces off entity
                     self.position.y += constants.PLAYER_JUMPING_SPEED * deltaTime
@@ -122,10 +127,10 @@ class Player:
         """Renders the player sprite to the screen."""
 
         # Move the viewport when the player hits the first or last third of the screen
-        if self.position.x - self.game.viewport[0] <= self.game.renderResolution[0] / 3:
-            self.game.viewport.x = max(0, self.position.x - self.game.viewportSize[0] / 3)
-        elif self.position.x - self.game.viewport[0] >= self.game.renderResolution[0] / 3 * 2:
-            self.game.viewport.x = max(0, self.position.x - self.game.viewportSize[0] / 3 * 2)
+        if self.position.x - self.game.viewport[0] <= self.game.renderResolution[0] / 2.5:
+            self.game.viewport.x = max(0, self.position.x - self.game.viewportSize[0] / 2.5)
+        elif self.position.x - self.game.viewport[0] >= self.game.renderResolution[0] - self.game.renderResolution[0] / 2.5:
+            self.game.viewport.x = max(0, self.position.x - (self.game.renderResolution[0] - self.game.renderResolution[0] / 2.5))
 
         self.game.viewport.y = max(0, self.position.y - self.game.viewportSize[1] / 2)
 

@@ -22,17 +22,20 @@ class Enemy:
 
     def reset_timer(self) -> int:
         """Returns a random number for the turret's shooting delay."""
-        return random.randint(40, 75)
+        return random.randint(10, 20) / constants.PROJECTILE_FIRE_RATE
 
     def tick(self, game: "game.Game", deltaTime: float) -> None:
         """Updates the turret's internal state."""
         if self.shooterTimer <= 0 and game.playerEntity is not None:
             self.shooterTimer = self.reset_timer()
-            position = pygame.math.Vector2(self.position.x, self.position.y)
-            velocity = (game.playerEntity.position + pygame.Vector2(game.playerEntity.size.x / 2, game.playerEntity.size.y / 2)) - position
-            velocity *= constants.PROJECTILE_SPEED
-            bullet = bullets.Bullet(game, position, velocity)
-            game.add_entity(bullet)
+
+            if game.playerEntity.position.distance_to(self.position) < constants.PLAYER_DETECT_RANGE:
+                position = pygame.math.Vector2(self.position.x, self.position.y + self.size.y / 2)
+                velocity = (game.playerEntity.position + pygame.Vector2(game.playerEntity.size.x / 2, game.playerEntity.size.y / 2)) - position
+                velocity = velocity.normalize() * constants.PROJECTILE_SPEED
+                bullet = bullets.Bullet(game, position, velocity)
+                game.add_entity(bullet)
+
         else:
             self.shooterTimer -= 1
 
