@@ -1,4 +1,3 @@
-import constants
 import random
 import game
 
@@ -11,12 +10,11 @@ class Bullet:
         surface = game.resources.get_image("bullet")
         self.size = pygame.math.Vector2(16, 16)
         self.sprite = pygame.transform.scale(surface, (int(self.size.x), int(self.size.y)))
+        self.game = game
 
         if velocity.x < 0:
             # The bullet has to face left if it's travelling left, so we flip the sprite.
             self.sprite = pygame.transform.flip(self.sprite, True, False)
-
-        self.game = game
 
         self.position = position
         self.velocity = velocity
@@ -36,7 +34,6 @@ class Bullet:
             game.remove_entity(self)
 
         if (playerRef := game.playerEntity) is not None:
-            playerRef = game.playerEntity
             playerHorizontal = playerRef.position.x <= self.position.x <= playerRef.position.x + playerRef.size.x
             playerVertical = playerRef.position.y <= self.position.y <= playerRef.position.y + playerRef.size.y
 

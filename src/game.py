@@ -7,6 +7,7 @@ import level
 
 import pygame.display
 import pygame.event
+import pygame.mixer
 import pygame.time
 import pygame.math
 import pygame
@@ -82,7 +83,7 @@ class Game:
 
         for entity in self.entities:
             entity.render(self.renderSurface)
-        
+
         if self.playerEntity and self.playerEntity.healthPoints > 0:
             self.renderSurface.blit(pygame.transform.scale(self.healthBar, (int(100 * (self.playerEntity.healthPoints / constants.PLAYER_HEALTH_MAX)), 16)), (1, self.renderResolution[1] - 34))
             self.renderSurface.blit(pygame.transform.scale(self.fuelBar, (int(100 * (self.playerEntity.jetpackFuel / constants.PLAYER_JETPACK_MAX)), 16)),  (1, self.renderResolution[1] - 17))
@@ -99,11 +100,12 @@ class Game:
             deltaTime = self.clock.tick(0) / 1000.0
             self.tick(deltaTime)
 
-            if self.playerEntity == None: # Game over
+            if self.playerEntity is None:
+                # It's game over: the game should not be running now.
                 self.running = False
 
-        if self.playerEntity == None: # Game over
-            self.display.fill((255, 0, 0))
+        if self.playerEntity is None:
+            blood = (255, 0, 0)
+            self.display.fill(blood)
             pygame.display.flip()
-
-            pygame.time.delay(2000)
+            pygame.time.delay(1500)

@@ -1,6 +1,5 @@
 import constants
-from enemies import Enemy
-from bullets import Bullet
+import enemies
 import game
 
 import pygame.transform
@@ -18,7 +17,6 @@ class Player:
 
         self.position = pygame.math.Vector2(64, 512)
         self.velocity = pygame.math.Vector2(0.0, 0.0)
-        self.direction = 0 # Left or right? 1 - left, 0 - right
 
         # Player game attributes.
         self.jetpackFuel = constants.PLAYER_JETPACK_MAX
@@ -38,16 +36,13 @@ class Player:
 
     def update_movement(self, game: "game.Game", deltaTime: float) -> None:
         """Updates player movement based on `deltaTime`."""
-
-        # 1x normally, 2x when shift held down
         self.isRunning = game.keyboard.pressed(pygame.locals.K_LSHIFT)
         runSpeed = constants.PLAYER_MOVEMENT_SPEED * (self.isRunning + 1)
 
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
         b = pygame.math.Vector2(self.position.x + self.size.x, self.position.y)
         collision = game.currentLevel.collision_check(a, b)
-
-        self.grounded = False
+        self.grounded = collision[3]
 
         if collision[2]:
             # Top-side collision: snap to the lower bound of the collided tile.
@@ -55,8 +50,6 @@ class Player:
             self.position.y = snapY - self.size.y - 1
             self.velocity.y = 0
         elif collision[3]:
-            self.grounded = True
-
             if game.keyboard.pressed(pygame.locals.K_SPACE):
                 # Player is grounded and key pressed: apply jumping force.
                 self.velocity.y = constants.PLAYER_JUMPING_SPEED
@@ -75,14 +68,12 @@ class Player:
             self.jetpackFuel -= 30 * deltaTime
         elif self.grounded and self.jetpackFuel < constants.PLAYER_JETPACK_MAX:
             # If space isn't being held and jetpack fuel isn't maxed out, add.
-            self.jetpackFuel += 15 * deltaTime
+            self.jetpackFuel += 20 * deltaTime
 
         if game.keyboard.pressed(pygame.locals.K_a):
             self.velocity.x -= runSpeed
-            self.direction = 1
         if game.keyboard.pressed(pygame.locals.K_d):
             self.velocity.x += runSpeed
-            self.direction = 0
 
         # Recompute collisions now that the player's vertical position has been resolved.
         a = pygame.math.Vector2(self.position.x, self.position.y + self.size.y)
@@ -110,16 +101,18 @@ class Player:
         self.velocity.x *= constants.PLAYER_FRICTION_COEFFICIENT
 
     def check_enemy_collision(self, game: "game.Game", deltaTime: float) -> None:
+        """Check for enemy collisions using the player's position."""
         rect = pygame.Rect(self.position, self.size)
+
         for entity in game.entities:
-            if isinstance(entity, Enemy):
-                # Make sure player is above the enemy
+            if isinstance(entity, enemies.Enemy):
+                # Make sure player is above the enemy.
                 enemyCollision = pygame.Rect(entity.position + pygame.Vector2(0, entity.size.y - 16), (entity.size.x, 16))
-                if self.position.y > entity.position.y + entity.size.y - 20 and rect.colliderect(enemyCollision): # Check for collision with enemy's head.
+
+                # Check for collision with enemy's head.
+                if self.position.y > entity.position.y + entity.size.y - 20 and rect.colliderect(enemyCollision):
+                    self.velocity.y = constants.PLAYER_JUMPING_SPEED
                     game.remove_entity(entity)
-                    self.velocity.y = constants.PLAYER_JUMPING_SPEED # Player bounces off entity
-                    self.position.y += constants.PLAYER_JUMPING_SPEED * deltaTime
-                    return
 
     def tick(self, game: "game.Game", deltaTime: float) -> None:
         """Updates the player's internal state."""
@@ -129,27 +122,27 @@ class Player:
 
     def render(self, display: pygame.Surface) -> None:
         """Renders the player sprite to the screen."""
-
-        # Move the viewport when the player hits the first or last third of the screen
+        # Move the viewport when the player hits the first or last third of the screen.
         if self.position.x - self.game.viewport[0] <= self.game.renderResolution[0] / 2.5:
             self.game.viewport.x = max(0, self.position.x - self.game.viewportSize[0] / 2.5)
         elif self.position.x - self.game.viewport[0] >= self.game.renderResolution[0] - self.game.renderResolution[0] / 2.5:
             self.game.viewport.x = max(0, self.position.x - (self.game.renderResolution[0] - self.game.renderResolution[0] / 2.5))
 
         self.game.viewport.y = max(0, self.position.y - self.game.viewportSize[1] / 2)
-
         playerPosition = pygame.Vector2(self.position.x, self.position.y + self.size.y)
         playerPosition = self.game.calculate_offset(playerPosition)
 
-        timeSinceStart = pygame.time.get_ticks() # Time since pygame init called in ms
-        spriteSourcePos = pygame.Vector2(0, 0);
-        if self.grounded: # Walking animation
-            if abs(self.velocity.x) >= constants.PLAYER_MOVEMENT_SPEED: # Check if player is moving
-                if self.isRunning: # Faster animations when running
+        # Time since pygame init called in milliseconds.
+        timeSinceStart = pygame.time.get_ticks()
+        spriteSourcePos = pygame.Vector2(0, 0)
+
+        if self.grounded: # Controls the walking animation.
+            if abs(self.velocity.x) >= constants.PLAYER_MOVEMENT_SPEED:
+                if self.isRunning: # Faster animations when running.
                     spriteSourcePos.x = int(((timeSinceStart % 500) / 125)) * constants.WORLD_TILE_SIZE
                 else:
                     spriteSourcePos.x = int(((timeSinceStart % 1000) / 250)) * constants.WORLD_TILE_SIZE
 
-        spriteSourcePos.y = self.size.y * self.direction
-
+        direction = 0 if self.velocity.x > 0 else 1
+        spriteSourcePos.y = self.size.y * direction
         display.blit(self.sprite, playerPosition, pygame.Rect(spriteSourcePos, self.size))
