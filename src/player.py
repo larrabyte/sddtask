@@ -32,6 +32,10 @@ class Player:
             game.remove_entity(self)
             game.playerEntity = None
 
+        if self.position.y + self.size.y < 0: # The player has fallen off the world.
+            game.remove_entity(self)
+            game.playerEntity = None
+
     def update_movement(self, game: "game.Game", deltaTime: float) -> None:
         """Updates player movement based on `deltaTime`."""
 
