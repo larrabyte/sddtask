@@ -1,7 +1,9 @@
-#!/bin/python3
+#!/usr/bin/env python3
 
 import sys
 import os
+
+print(os.path.dirname(os.path.realpath(__file__)))
 
 # Get the folder this script is in
 scriptPath = os.path.dirname(os.path.realpath(__file__))

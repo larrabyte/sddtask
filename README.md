@@ -1,15 +1,17 @@
 # sddtask
 Another (bigger) game made for the SDD course. Made using CPython and pygame.
 
+Run `run.py` anywhere, works on Windows, Linux and macOS.
+
 Basic controls (explained in game):
 
-- WASD - Move Player
+- **WASD** - Move Player
 
-- Space - Jetpack
+- **Space** - Jetpack
 
-- Shift - Run/Sprint
+- **Shift** - Run/Sprint
 
-- Esc - Pause Game
+- **Esc** - Pause Game
 
 Directory structure:
 
