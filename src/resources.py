@@ -34,6 +34,7 @@ class Resources:
         return surface
 
     def get_font(self, name: str) -> pygame.font.Font:
+        """Returns a font, identified by `name`. Caches if required."""
         if (resource := self.fonts.get(name, None)) is not None:
             return resource
 

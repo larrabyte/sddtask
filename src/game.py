@@ -1,10 +1,9 @@
-import collections
 import resources
 import constants
 import player
 import inputs
-import level
 
+import pygame.transform
 import pygame.display
 import pygame.locals
 import pygame.event
@@ -35,19 +34,17 @@ class Game:
         self.resources = resources.Resources()
 
         # Internal game variables.
-        self.healthBar = self.resources.get_image("health") # Health bar
-        self.fuelBar = self.resources.get_image("fuel") # Fuel bar
-        self.paused = self.resources.get_image("paused") # Pause menu
+        self.healthBar = self.resources.get_image("health")
+        self.fuelBar = self.resources.get_image("fuel")
+        self.paused = self.resources.get_image("paused")
 
         self.font = self.resources.get_font("vcr_osd_mono")
-
-        self.score = 600
-
         self.entities = set()
         self.currentLevel = None
         self.playerEntity = None
         self.gameResult = 0
         self.running = True
+        self.score = 600
 
     def calculate_offset(self, position: pygame.math.Vector2) -> pygame.math.Vector2:
         """Calculates the offset required for `position` to be rendered."""
@@ -79,12 +76,15 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.locals.K_ESCAPE: # Unpause on escape
+                    if event.key == pygame.locals.K_ESCAPE:
+                        # Unpause on Escape.
                         paused = False
-                    elif event.key == pygame.locals.K_r: # Restart on R
+                    elif event.key == pygame.locals.K_r:
+                        # Restart on R.
                         self.running = False
                         self.gameResult = 2
-                    elif event.key == pygame.locals.K_q: # Quit on Q
+                    elif event.key == pygame.locals.K_q:
+                        # Quit on Q.
                         self.running = False
 
     def tick(self, deltaTime: float) -> None:
@@ -93,15 +93,17 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.locals.K_ESCAPE: # Interrupt game loop to pause
+                if event.key == pygame.locals.K_ESCAPE:
+                    # Interrupt game loop to pause.
                     self.game_pause_loop()
-                    self.clock.tick(0) # Reset the timer
+                    self.clock.tick(0)
                     return
 
         for entity in self.entities.copy():
             entity.tick(self, deltaTime)
-        
-        self.score -= deltaTime # Score is lost over time
+
+        # Score is lost over time.
+        self.score -= deltaTime
 
     def render(self) -> None:
         """Renders all entities and tiles to the screen."""
@@ -113,8 +115,7 @@ class Game:
         if self.playerEntity is not None and self.playerEntity.healthPoints > 0:
             self.renderSurface.blit(pygame.transform.scale(self.healthBar, (int(150 * (self.playerEntity.healthPoints / constants.PLAYER_HEALTH_MAX)), 16)), (1, self.renderResolution[1] - 34))
             self.renderSurface.blit(pygame.transform.scale(self.fuelBar, (int(150 * (self.playerEntity.jetpackFuel / constants.PLAYER_JETPACK_MAX)), 16)),  (1, self.renderResolution[1] - 17))
-
-        self.renderSurface.blit(self.font.render(f"Score: { int(self.score) }", False, (0, 0, 0)), (1, 1))
+            self.renderSurface.blit(self.font.render(f"Score: {int(self.score)}", False, (0, 0, 0)), (10, 10))
 
         pygame.transform.scale(self.renderSurface, self.scaledResolution, self.display)
         pygame.display.flip()
@@ -152,6 +153,12 @@ class Game:
             # -1 means the game is lost (player died).
             gameOver = self.resources.get_image("gameover")
             self.display.blit(pygame.transform.scale(gameOver, self.scaledResolution), (0, 0))
+
+            white = (255, 255, 255)
+            text = self.font.render(f"Final Score: {int(self.score)}", False, white)
+            textPosition = (self.scaledResolution[0] / 2.275, self.scaledResolution[1] / 1.75)
+            self.display.blit(text, textPosition)
+
             pygame.mixer.music.stop()
             pygame.display.flip()
             return self.postgame()
@@ -159,7 +166,12 @@ class Game:
             # 1 means game was won (player reached the flag).
             gameOver = self.resources.get_image("gamewon")
             self.display.blit(pygame.transform.scale(gameOver, self.scaledResolution), (0, 0))
-            pygame.mixer.music.stop()
+
+            white = (255, 255, 255)
+            text = self.font.render(f"Final Score: {int(self.score)}", False, white)
+            textPosition = (self.scaledResolution[0] / 2.4, self.scaledResolution[1] / 2.675)
+            self.display.blit(text, textPosition)
+
             pygame.display.flip()
             return self.postgame()
         elif self.gameResult == 2: # Restart in pause menu
