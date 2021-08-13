@@ -37,6 +37,7 @@ class Game:
         # Internal game variables.
         self.healthBar = self.resources.get_image("health")
         self.fuelBar = self.resources.get_image("fuel")
+        self.paused = self.resources.get_image("paused")
         self.entities = set()
         self.currentLevel = None
         self.playerEntity = None
@@ -61,11 +62,35 @@ class Game:
         """Removes an entity from the internal entity tracking system."""
         self.entities.remove(entity)
 
+    def game_pause_loop(self):
+        paused = True
+
+        self.display.blit(pygame.transform.scale(self.paused, self.scaledResolution), (0, 0))
+        pygame.display.flip()
+
+        while paused and self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.locals.K_ESCAPE:
+                        paused = False
+                    elif event.key == pygame.locals.K_r:
+                        self.running = False
+                        self.gameResult = 2
+                    elif event.key == pygame.locals.K_q:
+                        self.running = False
+
     def tick(self, deltaTime: float) -> None:
         """Updates the game's internal state."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.locals.K_ESCAPE: # Interrupt game loop to pause
+                    self.game_pause_loop()
+                    self.clock.tick(0) # Reset the timer
+                    return
 
         for entity in self.entities.copy():
             entity.tick(self, deltaTime)
@@ -87,15 +112,14 @@ class Game:
     def postgame(self) -> bool:
         """Post game loop."""
         while True: # Now we listen for keystrokes.
-            if self.keyboard.pressed(pygame.locals.K_r):
-                return True
-            if self.keyboard.pressed(pygame.locals.K_ESCAPE):
-                return False
-
             for event in pygame.event.get():
-                pass
-
-            self.clock.tick(30)
+                if event.type == pygame.QUIT:
+                    return False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.locals.K_r:
+                        return True
+                    elif event.key == pygame.locals.K_ESCAPE:
+                        return False
 
     def run(self) -> bool:
         """Starts the game loop. This function does not return."""
@@ -125,3 +149,5 @@ class Game:
             pygame.mixer.music.stop()
             pygame.display.flip()
             return self.postgame()
+        elif self.gameResult == 2: # Restart in pause menu
+            return True
