@@ -137,10 +137,6 @@ class Game:
         pygame.mixer.music.load("audio/music.wav")
         pygame.mixer.music.play(-1)
 
-        self.viewportSize = self.renderSurface.get_size()
-        self.viewport = pygame.math.Vector2(0.0, 0.0)
-        self.running = True
-
         while self.running:
             self.render()
             deltaTime = self.clock.tick(0) / 1000.0
