@@ -44,7 +44,8 @@ class Game:
         self.playerEntity = None
         self.gameResult = 0
         self.running = True
-        self.score = 600
+        self.score = 0
+        self.finishTime = 0
 
     def calculate_offset(self, position: pygame.math.Vector2) -> pygame.math.Vector2:
         """Calculates the offset required for `position` to be rendered."""
@@ -102,8 +103,8 @@ class Game:
         for entity in self.entities.copy():
             entity.tick(self, deltaTime)
 
-        # Score is lost over time.
-        self.score -= deltaTime
+        # Used to add a time bonus to score
+        self.finishTime += deltaTime
 
     def render(self) -> None:
         """Renders all entities and tiles to the screen."""
@@ -164,8 +165,15 @@ class Game:
             self.display.blit(pygame.transform.scale(gameOver, self.scaledResolution), (0, 0))
 
             white = (255, 255, 255)
-            text = self.font.render(f"Final Score: {int(self.score)}", False, white)
-            textPosition = (self.scaledResolution[0] / 2.4, self.scaledResolution[1] / 2.675)
+            scoreString = f"Score: {int(self.score)}    "
+            if self.finishTime < 5 * 60: # 5 Minutes
+                scoreString += f"Time Bonus: {int(5 * 60 - self.finishTime)}    "
+                self.score += 5 * 60 - self.finishTime
+
+            scoreString += f"Final Score: {int(self.score)}"
+
+            text = self.font.render(scoreString, False, white)
+            textPosition = (self.scaledResolution[0] / 2 - self.font.size(scoreString)[0] / 2, self.scaledResolution[1] / 2.675)
             self.display.blit(text, textPosition)
 
             pygame.display.flip()
