@@ -85,13 +85,12 @@ class Player:
             # Left-side collision: snap to the right side of the collided tile.
             snapX = int(self.position.x) & ~(constants.WORLD_TILE_SIZE - 1)
             self.position.x = snapX + self.size.x + 1
-            self.velocity.x = 0
-
+            self.velocity.x = -1
         if collision[1][0]:
             # Right-side collision: snap to the left side of the collided tile.
             snapX = int(self.position.x + self.size.x) & ~(constants.WORLD_TILE_SIZE - 1)
             self.position.x = snapX - self.size.x - 1
-            self.velocity.x = 0
+            self.velocity.x = 1
 
         if any(256 in x[1] for x in collision): # 256 is the tile ID of the win flag
             # The player has hit the flag: win screen!
