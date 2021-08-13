@@ -17,5 +17,5 @@ PLAYER_JETPACK_FUEL_REGEN = 120 # Fuel regeneration per second.
 PLAYER_DETECT_RANGE = 32 * WORLD_TILE_SIZE # Detection range of the player to the enemies.
 SCREEN_SCALE = 2 # Screen scaling factor.
 
-PROJECTILE_SPEED = 180 # Speed of enemy projeciles.
-PROJECTILE_FIRE_RATE = 0.03 # Enemy fire rate.
+PROJECTILE_SPEED = 200 # Speed of enemy projeciles.
+PROJECTILE_FIRE_RATE = 0.035 # Enemy fire rate.

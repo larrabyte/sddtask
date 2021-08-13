@@ -17,8 +17,9 @@ class Bullet:
         # Rotate the bullet to face the direction of travel.
         if velocity.x < 0:
             self.sprite = pygame.transform.flip(self.sprite, True, False)
+        elif velocity.x == 0:
+            velocity.x = 0.01
 
-        velocity.x = min(velocity.x, 0.01)
         theta = math.atan(velocity.y / velocity.x) * (180.0 / math.pi)
         self.sprite = pygame.transform.rotozoom(self.sprite, theta, 1.0)
 
