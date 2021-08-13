@@ -39,7 +39,7 @@ class Bullet:
 
             if playerHorizontal and playerVertical:
                 # We hit the player, deal damage!
-                playerRef.healthPoints -= random.randint(10, 20)
+                playerRef.healthPoints -= random.randint(7, 15)
                 playerRef.hurt.play()
                 game.remove_entity(self)
 
