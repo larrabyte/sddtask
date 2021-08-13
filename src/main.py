@@ -2,7 +2,7 @@ import player
 import level
 import game
 
-if __name__ == "__main__":
+def start_game():
     gameObject = game.Game()
     mainPlayer = player.Player(gameObject)
     mainLevel = level.Level(gameObject, "level1")
@@ -19,3 +19,6 @@ if __name__ == "__main__":
 
         gameObject.add_entity(mainPlayer)
         gameObject.currentLevel = mainLevel
+
+if __name__ == "__main__":
+    start_game()
