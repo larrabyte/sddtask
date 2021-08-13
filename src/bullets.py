@@ -1,6 +1,8 @@
 import random
 import game
+import math
 
+import pygame.transform
 import pygame.math
 import pygame
 
@@ -12,9 +14,13 @@ class Bullet:
         self.sprite = pygame.transform.scale(surface, (int(self.size.x), int(self.size.y)))
         self.game = game
 
+        # Rotate the bullet to face the direction of travel.
         if velocity.x < 0:
-            # The bullet has to face left if it's travelling left, so we flip the sprite.
             self.sprite = pygame.transform.flip(self.sprite, True, False)
+
+        velocity.x = min(velocity.x, 0.01)
+        theta = math.atan(velocity.y / velocity.x) * (180.0 / math.pi)
+        self.sprite = pygame.transform.rotozoom(self.sprite, theta, 1.0)
 
         self.position = position
         self.velocity = velocity
