@@ -1,25 +1,16 @@
 # sddtask
 Another (bigger) game made for the SDD course. Made using CPython and pygame.
-
-Run `run.py` anywhere, works on Windows, Linux and macOS.
+To run the game, simply double click `run.py`! (a terminal also works).
+Works on Windows, Linux and macOS.
 
 Basic controls (explained in game):
+- **WASD** to move the player.
+- **Space** to activate the jetpack.
+- **Shift** to run/sprint.
+- **Esc** to pause the game.
 
-- **WASD** - Move Player
-
-- **Space** - Jetpack
-
-- **Shift** - Run/Sprint
-
-- **Esc** - Pause Game
-
-Directory structure:
-
-- `audio/` 	Sound resource files
-
-- `images/`	Image resources
-
-- `levels/`	JSON level files loaded by game and corresponding TMX (Tiled) map files
-
-- `src/` 	Python source files
-
+Game directory structure:
+- `audio/` 	Sound resource files.
+- `images/`	Image resource files.
+- `levels/`	JSON level files loaded by game and corresponding TMX (Tiled) map files.
+- `src/` 	Python source files.
