@@ -29,7 +29,7 @@ class Enemy:
             self.shooterTimer = self.reset_timer()
 
             if game.playerEntity.position.distance_to(self.position) < constants.PLAYER_DETECT_RANGE:
-                position = pygame.math.Vector2(self.position.x, self.position.y + self.size.y / 2)
+                position = pygame.math.Vector2(self.position.x, self.position.y + self.size.y / 3)
                 velocity = (game.playerEntity.position + pygame.Vector2(game.playerEntity.size.x / 2, game.playerEntity.size.y / 2)) - position
                 velocity = velocity.normalize() * constants.PROJECTILE_SPEED
                 bullet = bullets.Bullet(game, position, velocity)

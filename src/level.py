@@ -36,7 +36,8 @@ class Level:
                 # If this layer contains enemy spawn points, add them as entities.
                 for y in range(self.height):
                     for x in range(self.width):
-                        if (identifier := current[y][x] - 256) > 0 and identifier <= 3:
+                        identifier = current[y][x] - 256
+                        if 0 < identifier <= 3:
                             # Enemy tiles start at 257.
                             tileY = self.height - y - 1
                             position = pygame.math.Vector2(x * constants.WORLD_TILE_SIZE, tileY * constants.WORLD_TILE_SIZE)
@@ -101,7 +102,8 @@ class Level:
             for x in range(min(self.viewportSizeTiles[0], self.width - offset[0])):
                 yRenderOffset = resolution[1] - ((y + 1) * constants.WORLD_TILE_SIZE - viewportUnalignedY)
 
-                if (tile := layer[self.height - y - offset[1] - 1][x + offset[0]]) > 0:
+                tile = layer[self.height - y - offset[1] - 1][x + offset[0]]
+                if tile > 0:
                     destination = (x * constants.WORLD_TILE_SIZE - viewportUnalignedX, yRenderOffset)
                     area = (((tile - 1) % self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, int((tile - 1) / self.tilemapTilesPerRow) * constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE, constants.WORLD_TILE_SIZE)
                     display.blit(self.tilemap, destination, area)

@@ -20,7 +20,8 @@ class Resources:
 
     def get_image(self, name: str) -> pygame.Surface:
         """Returns a surface, identified by `name`. Caches if required."""
-        if (resource := self.data.get(name, None)) is not None:
+        resource = self.data.get(name, None)
+        if resource is not None:
             return resource
 
         try: # PyGame on Apple Silicon doesn't support non-BMP images.
@@ -35,7 +36,8 @@ class Resources:
 
     def get_font(self, name: str) -> pygame.font.Font:
         """Returns a font, identified by `name`. Caches if required."""
-        if (resource := self.fonts.get(name, None)) is not None:
+        resource = self.fonts.get(name, None)
+        if resource is not None:
             return resource
 
         path = os.path.join("fonts", f"{name}.ttf")

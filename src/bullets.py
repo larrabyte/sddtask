@@ -33,7 +33,8 @@ class Bullet:
         if not (boundedX and boundedY) or any(x[0] for x in collision):
             game.remove_entity(self)
 
-        if (playerRef := game.playerEntity) is not None:
+        playerRef = game.playerEntity
+        if playerRef is not None:
             playerHorizontal = playerRef.position.x <= self.position.x <= playerRef.position.x + playerRef.size.x
             playerVertical = playerRef.position.y <= self.position.y <= playerRef.position.y + playerRef.size.y
 
