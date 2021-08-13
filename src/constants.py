@@ -8,6 +8,7 @@ WORLD_BACKGROUND_COLOUR = (0, 0, 0) # World background colour (when no tile is p
 PLAYER_FRICTION_COEFFICIENT = 0.9 # Player friction coefficient.
 PLAYER_MOVEMENT_SPEED = 16 # Movement speed of the player.
 PLAYER_HEALTH_MAX = 100 # Maximum player health.
+PLAYER_VELOCITY_MAX = 800 # Cap player velocity
 PLAYER_JUMPING_SPEED = 200 # Jumping force.
 PLAYER_JETPACK_SPEED = 1250 # Jetpack acceleration.
 PLAYER_JETPACK_MAX = 300 # Max jetpack fuel.

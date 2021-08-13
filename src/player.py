@@ -107,8 +107,14 @@ class Player:
             self.position.y = game.currentLevel.height * constants.WORLD_TILE_SIZE
             self.velocity.y = constants.WORLD_GRAVITY * deltaTime # Reduces vertical velocity.
 
+        # Cap player velocity
+        self.velocity.y = max(min(self.velocity.y, constants.PLAYER_VELOCITY_MAX), -constants.PLAYER_VELOCITY_MAX)
+
         # Update the player and game state accordingly.
         self.position += self.velocity * deltaTime
+        # Ensure player doesent go off map
+        self.position.x = max(0, min(self.position.x, (self.game.currentLevel.width - 1) * constants.WORLD_TILE_SIZE - self.size.x - 1))
+
         self.velocity.x *= constants.PLAYER_FRICTION_COEFFICIENT
 
     def check_enemy_collision(self, game: "game.Game", deltaTime: float) -> None:
@@ -141,7 +147,9 @@ class Player:
         elif self.position.x - self.game.viewport[0] >= self.game.renderResolution[0] - self.game.renderResolution[0] / 2.5:
             self.game.viewport.x = max(0, self.position.x - (self.game.renderResolution[0] - self.game.renderResolution[0] / 2.5))
 
-        self.game.viewport.y = max(0, self.position.y - self.game.viewportSize[1] / 2)
+        maxViewportHeight = self.game.currentLevel.height * constants.WORLD_TILE_SIZE - self.game.renderResolution[1]
+
+        self.game.viewport.y = min(max(0, self.position.y - self.game.viewportSize[1] / 2), maxViewportHeight)
         playerPosition = pygame.Vector2(self.position.x, self.position.y + self.size.y)
         playerPosition = self.game.calculate_offset(playerPosition)
 
