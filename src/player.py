@@ -66,10 +66,10 @@ class Player:
         if game.keyboard.pressed(pygame.locals.K_SPACE) and self.jetpackFuel > 0:
             # If the player is holding space and jetpack fuel is available, update as needed.
             self.velocity.y += constants.PLAYER_JETPACK_SPEED * deltaTime
-            self.jetpackFuel -= 50 * deltaTime
+            self.jetpackFuel -= constants.PLAYER_JETPACK_FUEL_USE * deltaTime
         elif self.grounded and self.jetpackFuel < constants.PLAYER_JETPACK_MAX:
             # If space isn't being held and jetpack fuel isn't maxed out, add.
-            self.jetpackFuel += 30 * deltaTime
+            self.jetpackFuel += constants.PLAYER_JETPACK_FUEL_REGEN * deltaTime
 
         if game.keyboard.pressed(pygame.locals.K_a):
             self.velocity.x -= runSpeed
@@ -93,7 +93,7 @@ class Player:
             self.position.x = snapX - self.size.x - 1
             self.velocity.x = 0
 
-        if any(256 in x[1] for x in collision):
+        if any(256 in x[1] for x in collision): # 256 is the tile ID of the win flag
             # The player has hit the flag: win screen!
             game.remove_entity(self)
             game.playerEntity = None
@@ -103,8 +103,9 @@ class Player:
 
         if self.position.x < 0:
             self.position.x = 0
-        if self.position.y > game.currentLevel.height * constants.WORLD_TILE_SIZE:
+        if self.position.y > game.currentLevel.height * constants.WORLD_TILE_SIZE: # Check if the player has hit the roof of the level
             self.position.y = game.currentLevel.height * constants.WORLD_TILE_SIZE
+            self.velocity.y = constants.WORLD_GRAVITY * deltaTime # Reduces vertical velocity.
 
         # Update the player and game state accordingly.
         self.position += self.velocity * deltaTime
@@ -123,6 +124,7 @@ class Player:
                 if self.position.y > entity.position.y + entity.size.y - 20 and rect.colliderect(enemyCollision):
                     self.velocity.y = constants.PLAYER_JUMPING_SPEED
                     game.remove_entity(entity)
+                    game.score += 25 # 25 points for killing an enemy!
                     break
 
     def tick(self, game: "game.Game", deltaTime: float) -> None:

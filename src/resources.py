@@ -2,12 +2,14 @@ import json
 import os
 
 import pygame.image
+import pygame.font
 import pygame
 
 class Resources:
     def __init__(self) -> None:
         """Initialises an instance of the Resource Manager."""
         self.data = {}
+        self.fonts = {}
 
     def fetch_level_data(self, name: str) -> dict:
         """Returns the JSON data for a level, specified by `name` (read from disk)."""
@@ -30,3 +32,13 @@ class Resources:
 
         self.data[name] = surface
         return surface
+
+    def get_font(self, name: str) -> pygame.font.Font:
+        if (resource := self.fonts.get(name, None)) is not None:
+            return resource
+
+        path = os.path.join("fonts", f"{name}.ttf")
+        font = pygame.font.Font(path, 24)
+
+        self.fonts[name] = font
+        return font

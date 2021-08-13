@@ -35,9 +35,14 @@ class Game:
         self.resources = resources.Resources()
 
         # Internal game variables.
-        self.healthBar = self.resources.get_image("health")
-        self.fuelBar = self.resources.get_image("fuel")
-        self.paused = self.resources.get_image("paused")
+        self.healthBar = self.resources.get_image("health") # Health bar
+        self.fuelBar = self.resources.get_image("fuel") # Fuel bar
+        self.paused = self.resources.get_image("paused") # Pause menu
+
+        self.font = self.resources.get_font("vcr_osd_mono")
+
+        self.score = 600
+
         self.entities = set()
         self.currentLevel = None
         self.playerEntity = None
@@ -63,6 +68,7 @@ class Game:
         self.entities.remove(entity)
 
     def game_pause_loop(self):
+        """Game pause loop."""
         paused = True
 
         self.display.blit(pygame.transform.scale(self.paused, self.scaledResolution), (0, 0))
@@ -73,12 +79,12 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.locals.K_ESCAPE:
+                    if event.key == pygame.locals.K_ESCAPE: # Unpause on escape
                         paused = False
-                    elif event.key == pygame.locals.K_r:
+                    elif event.key == pygame.locals.K_r: # Restart on R
                         self.running = False
                         self.gameResult = 2
-                    elif event.key == pygame.locals.K_q:
+                    elif event.key == pygame.locals.K_q: # Quit on Q
                         self.running = False
 
     def tick(self, deltaTime: float) -> None:
@@ -94,6 +100,8 @@ class Game:
 
         for entity in self.entities.copy():
             entity.tick(self, deltaTime)
+        
+        self.score -= deltaTime # Score is lost over time
 
     def render(self) -> None:
         """Renders all entities and tiles to the screen."""
@@ -103,8 +111,10 @@ class Game:
             entity.render(self.renderSurface)
 
         if self.playerEntity is not None and self.playerEntity.healthPoints > 0:
-            self.renderSurface.blit(pygame.transform.scale(self.healthBar, (int(100 * (self.playerEntity.healthPoints / constants.PLAYER_HEALTH_MAX)), 16)), (1, self.renderResolution[1] - 34))
-            self.renderSurface.blit(pygame.transform.scale(self.fuelBar, (int(100 * (self.playerEntity.jetpackFuel / constants.PLAYER_JETPACK_MAX)), 16)),  (1, self.renderResolution[1] - 17))
+            self.renderSurface.blit(pygame.transform.scale(self.healthBar, (int(150 * (self.playerEntity.healthPoints / constants.PLAYER_HEALTH_MAX)), 16)), (1, self.renderResolution[1] - 34))
+            self.renderSurface.blit(pygame.transform.scale(self.fuelBar, (int(150 * (self.playerEntity.jetpackFuel / constants.PLAYER_JETPACK_MAX)), 16)),  (1, self.renderResolution[1] - 17))
+
+        self.renderSurface.blit(self.font.render(f"Score: { int(self.score) }", False, (0, 0, 0)), (1, 1))
 
         pygame.transform.scale(self.renderSurface, self.scaledResolution, self.display)
         pygame.display.flip()
@@ -122,7 +132,7 @@ class Game:
                         return False
 
     def run(self) -> bool:
-        """Starts the game loop. This function does not return."""
+        """Starts the game loop."""
         pygame.mixer.music.load("audio/music.wav")
         pygame.mixer.music.play(-1)
 
@@ -134,6 +144,9 @@ class Game:
             self.render()
             deltaTime = self.clock.tick(0) / 1000.0
             self.tick(deltaTime)
+
+        # A return value of false indicates that the game was quit.
+        # A return value of true indicates that the game should be restarted.
 
         if self.gameResult == -1:
             # -1 means the game is lost (player died).
