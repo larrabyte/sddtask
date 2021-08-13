@@ -14,7 +14,6 @@ PLAYER_JETPACK_SPEED = 1250 # Jetpack acceleration.
 PLAYER_JETPACK_MAX = 300 # Max jetpack fuel.
 PLAYER_JETPACK_FUEL_USE = 60 # Fuel consumed per second.
 PLAYER_JETPACK_FUEL_REGEN = 120 # Fuel regeneration per second.
-PLAYER_JETPACK_AIR_CONTROL = 2 # TODO: document this.
 PLAYER_DETECT_RANGE = 32 * WORLD_TILE_SIZE # Detection range of the player to the enemies.
 SCREEN_SCALE = 2 # Screen scaling factor.
 
